@@ -1,0 +1,118 @@
+* { margin:0; padding:0; }
+body { margin:10px; font-size: 15px }
+a { text-decoration: none }
+h1 { font-family: Arial; font-size:24pt; color: white; 
+     text-align: center; padding:4px; }
+fieldset { min-height: 24px; padding: 6px; margin-top: 6px; margin-bottom:6px;  }
+legend { margin-left: 6px; padding: 0 3px }
+error-box { color: red; border: 1px solid red; margin: 4px 0; }
+.notify-async { color: green; border: 1px solid green; padding: 10px;
+    margin: 6px 0 }
+#header { width:820px; background-color: #f90; }
+
+#pq_table { width: 300px; height: 180px; cursor: default; overflow-y: scroll; overflow-x: hidden; 
+            border: 1px solid gray; margin:4px; }
+#pq_table * { margin:0; padding:0; }
+#pq_table table { width: 100%; }
+#pq_table tr { margin:0; padding:0; }
+#pq_table td { margin:0; padding-left:16px; font-size:14px; }
+#pq_table .selected { background-color: #ccc; }
+
+#pq_table .wait_cashier { color: #008000; background-image: url("pharma-images/wait_pack.bmp");
+                       background-repeat: no-repeat; background-position: center left; }
+#pq_table .wait_drug { color: #800000; background-image: url("pharma-images/pack_done.bmp");
+                       background-repeat: no-repeat; background-position: center left; }
+
+.pqueue { width: 300px; height: 180px; cursor: default; overflow-y: scroll; overflow-x: hidden; 
+            border: 1px solid gray; margin:4px; }
+.pqueue * { margin:0; padding:0; }
+.pqueue table { width: 100%; }
+.pqueue tr { margin:0; padding:0; }
+.pqueue td { margin:0; padding-left:16px; font-size:14px; }
+.pqueue .selected { background-color: #ccc; }
+.pqueue .wait_cashier { color: #008000; background-image: url("pharma-images/wait_pack.bmp");
+                       background-repeat: no-repeat; background-position: center left; }
+.pqueue .wait_drug { color: #800000; background-image: url("pharma-images/pack_done.bmp");
+                       background-repeat: no-repeat; background-position: center left; }
+
+
+#packaging_box { border: 2px solid #f90; }
+#packaging_patient { margin: 4px; }
+#packaging_patient_name { font-weight:bold; font-size:130%; margin-top: 4px; }
+#packaging_patient_yomi { margin-top: 4px; margin-left: 10px; }
+#packaging_patient_info { margin-left: 10px; }
+#drug_list { margin:10px 30px 10px 10px; padding:6px; background-color: #ddd; }
+#print_buttons { margin:4px 10px; }
+
+.aux-info {
+    margin: 6px 0;
+}
+
+.aux-info .control-box {
+    border: 1px solid #ccc;
+    padding: 6px;
+}
+
+.aux-info .control-box input[type=radio]:not(:first-child) {
+    margin-left: 10px
+}
+
+.aux-info .visits-box {
+    margin: 6px 0
+}
+
+.aux-info .visit-record {
+    margin: 6px 0
+}
+
+.aux-info .visit-date {
+    background-color: #ddd;
+    font-weight: bold;
+    padding: 2px;
+}
+
+/**
+#aux-info-box {
+    margin: 6px 0;
+}
+
+#aux-info-box .left-column a {
+    text-decoration:none;
+    font-size:13px;
+    margin: 3px 0;
+}
+#aux-info-box .right-column .title {
+    font-weight:bold;
+    font-size:15px;
+    margin-bottom:4px;
+}
+#aux-info-box .right-column .drug-list {
+    font-size:13px;
+    border: 1px solid #666;
+    padding: 6px;
+    border-radius: 8px;
+}
+#aux-info-box .right-column .drug-list .drug-item {
+    margin-bottom:4px;
+}
+#aux-info-box .right-column .text-list {
+    font-size:13px;
+    margin-top: 10px;
+}
+**/
+
+/*
+#aux-info-box .right-column .text-list .text-item {
+
+}
+*/
+
+/*#record-list-pane .visit-entry { font-size:13px; }
+#record-list .visit-date { background-color:#ccc; font-weight:bold; }
+#record-list-nav a { text-decoration:none; }
+.aux-pane { display:none; }
+.patient-drug { text-decoration:none; }
+.drug-prescribed-date { text-decoration:none; color:#666; }
+.record-for-drug { margin:10px; border:2px solid #ccc; padding:10px; 
+    font-size:80%; }
+*/

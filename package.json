@@ -1,0 +1,27 @@
+{
+  "name": "myclinic-pharma",
+  "version": "1.0.0",
+  "description": "Pharmacy service for myclinic",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack web-src/main.js static/bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hangilc/myclinic-pharma.git"
+  },
+  "author": "Hangil Chang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hangilc/myclinic-pharma/issues"
+  },
+  "homepage": "https://github.com/hangilc/myclinic-pharma#readme",
+  "devDependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  },
+  "dependencies": {
+    "hogan": "^1.0.2"
+  }
+}

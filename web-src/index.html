@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>薬局</title>
+    <link rel="stylesheet" type="text/css" href="{{baseUrl}}/pharma.css">
+</head>
+<body>
+<div id="header"><center><img src="{{baseUrl}}/yakkyoku.gif" border="0"></center></div>
+<div id="app">
+    <table width="820px">
+        <tbody>
+            <tr style="vertical-align: top">
+                <td width="300px">
+                    <h3>患者リスト</h3>
+					<div className="pqueue" id="patient-list">
+						<table>
+							<tbody></tbody>
+						</table>
+					</div>;
+                    <PatientList config={this.state.patientList} />
+                    <img src="{{baseUrl}}/wait_cashier.bmp" />会計待ち
+                    <img src="{{baseUrl}}/wait_drug.bmp" />薬渡待ち<br />
+					<IncludeAllPatientsInput patientListMode={this.state.patientList.mode} />
+					<button onClick={this.onRefreshClick}>更新</button>
+					<button onClick={this.onStartChouzai}>調剤開始</button>
+					<table width="300px"><tbody><tr><td>
+						<PrintBlankDrugbags />
+						<PrinterSetting />
+                        <PreviousTechou />
+					</td></tr></tbody></table>
+                </td>   
+					<td style={{verticalAlign: "top"}} width="520px">
+					<PackagingBox config={this.state.packagingPatient} />
+                    <AuxInfo config={this.state.auxInfo} visitId={this.state.packagingPatient.visitId} 
+                        patient={this.state.packagingPatient.patient} />
+                </td>
+           </tr>
+        </tbody>
+    </table>;
+</div>
+<script src="{{baseUrl}}/bundle.js"></script>
+</body>
+</html>
