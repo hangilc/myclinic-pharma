@@ -56,7 +56,7 @@ exports.getVisit = function(visitId, cb){ // get_visit
 
 exports.getPatient = function(patientId, cb){ // get_patient
 	cb(undefined, {
-		patient_id: 2239,
+		patient_id: patientId,
 		last_name: "LAST_NAME_2",
 		first_name: "FIRST_NAME_2",
 		last_name_yomi: "LAST_NAME_YOMI_2",
@@ -109,6 +109,21 @@ exports.listFullVisits = function(patientId, offset, count, cb){
 					d_prescribed: 1
 				}
 			]
+		}
+	]);
+}
+
+exports.listIyakuhinByPatient = function(patientId, cb){
+	cb(undefined, [
+		{
+			iyakuhincode: 1234,
+			name: "DRUG_NAME_2",
+			yomi: "DRUG_YOMI_2"
+		},
+		{
+			iyakuhincode: 1235,
+			name: "DRUG_NAME_3",
+			yomi: "DRUG_YOMI_3"
 		}
 	]);
 }
