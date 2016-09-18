@@ -18,9 +18,9 @@ error-box { color: red; border: 1px solid red; margin: 4px 0; }
 #pq_table td { margin:0; padding-left:16px; font-size:14px; }
 #pq_table .selected { background-color: #ccc; }
 
-#pq_table .wait_cashier { color: #008000; background-image: url("pharma-images/wait_pack.bmp");
+#pq_table .wait_cashier { color: #008000; background-image: url("wait_pack.bmp");
                        background-repeat: no-repeat; background-position: center left; }
-#pq_table .wait_drug { color: #800000; background-image: url("pharma-images/pack_done.bmp");
+#pq_table .wait_drug { color: #800000; background-image: url("pack_done.bmp");
                        background-repeat: no-repeat; background-position: center left; }
 
 .pqueue { width: 300px; height: 180px; cursor: default; overflow-y: scroll; overflow-x: hidden; 
@@ -30,9 +30,9 @@ error-box { color: red; border: 1px solid red; margin: 4px 0; }
 .pqueue tr { margin:0; padding:0; }
 .pqueue td { margin:0; padding-left:16px; font-size:14px; }
 .pqueue .selected { background-color: #ccc; }
-.pqueue .wait_cashier { color: #008000; background-image: url("pharma-images/wait_pack.bmp");
+.pqueue .wait_cashier { color: #008000; background-image: url("wait_pack.bmp");
                        background-repeat: no-repeat; background-position: center left; }
-.pqueue .wait_drug { color: #800000; background-image: url("pharma-images/pack_done.bmp");
+.pqueue .wait_drug { color: #800000; background-image: url("pack_done.bmp");
                        background-repeat: no-repeat; background-position: center left; }
 
 

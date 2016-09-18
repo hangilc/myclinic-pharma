@@ -13,5 +13,5 @@ app.use("/pharma", subApp);
 
 var port = 8081;
 app.listen(port, function(){
-	console.log("pharma server listening to " + 8081);
+	console.log("pharma server listening to " + port);
 })

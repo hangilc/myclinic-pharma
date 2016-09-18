@@ -13,17 +13,17 @@
             <tr style="vertical-align: top">
                 <td width="300px">
                     <h3>患者リスト</h3>
-					<div className="pqueue" id="patient-list">
+					<div class="pqueue" id="patient-list">
 						<table>
 							<tbody></tbody>
 						</table>
-					</div>;
+					</div>
                     <PatientList config={this.state.patientList} />
                     <img src="{{baseUrl}}/wait_cashier.bmp" />会計待ち
                     <img src="{{baseUrl}}/wait_drug.bmp" />薬渡待ち<br />
-					<IncludeAllPatientsInput patientListMode={this.state.patientList.mode} />
-					<button onClick={this.onRefreshClick}>更新</button>
-					<button onClick={this.onStartChouzai}>調剤開始</button>
+                    <input type="checkbox" name="include-all-patients"> 処方済の患者も含める</input>
+					<button id="refresh-button">更新</button>
+					<button id="start-chouzai-button">調剤開始</button>
 					<table width="300px"><tbody><tr><td>
 						<PrintBlankDrugbags />
 						<PrinterSetting />
@@ -31,13 +31,13 @@
 					</td></tr></tbody></table>
                 </td>   
 					<td style={{verticalAlign: "top"}} width="520px">
-					<PackagingBox config={this.state.packagingPatient} />
+                    <div id="packaging_box" style="display:none" />
                     <AuxInfo config={this.state.auxInfo} visitId={this.state.packagingPatient.visitId} 
                         patient={this.state.packagingPatient.patient} />
                 </td>
            </tr>
         </tbody>
-    </table>;
+    </table>
 </div>
 <script src="{{baseUrl}}/bundle.js"></script>
 </body>
