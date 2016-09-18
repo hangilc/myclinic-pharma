@@ -18,7 +18,6 @@
 							<tbody></tbody>
 						</table>
 					</div>
-                    <PatientList config={this.state.patientList} />
                     <img src="{{baseUrl}}/wait_cashier.bmp" />会計待ち
                     <img src="{{baseUrl}}/wait_drug.bmp" />薬渡待ち<br />
                     <input type="checkbox" name="include-all-patients"> 処方済の患者も含める</input>
@@ -30,10 +29,36 @@
                         <PreviousTechou />
 					</td></tr></tbody></table>
                 </td>   
-					<td style={{verticalAlign: "top"}} width="520px">
-                    <div id="packaging_box" style="display:none" />
-                    <AuxInfo config={this.state.auxInfo} visitId={this.state.packagingPatient.visitId} 
-                        patient={this.state.packagingPatient.patient} />
+				<td style="vertical-align: top" width="520px">
+                    <div id="packaging_box" style="display:none">
+                        <div id="packaging-patient-wrapper"></div>
+                        <div id="drug_list"></div>
+                        <div id="print_buttons">
+                            <div>
+                                <button onClick={this.printPrescContent}>処方内容印刷</button>
+                                <button onClick={this.printPresc}>薬袋印刷</button>
+                                <button onClick={this.printTechou}>薬手帳印刷</button>
+                            </div>
+                            <div style="margin-top: 4px">
+                                <button onClick={this.printAll}>*全部印刷*</button>
+                                <button onClick={this.printAllExceptTechou}>*全部印刷(薬手帳なし)*</button>
+                            </div>
+                        </div>
+                        <div id="menu_2" style="text-align: right; margin: 0 10px 10px 0">
+                            <button onClick={this.onCancel}>キャンセル</button>
+                            <button onClick={this.onPrescDone}>薬渡し終了</button>
+                        </div>
+                    </div>
+                    <div class="aux-info" id="aux-info" style="display:none">
+                        <div class="control-box">
+                            <form onsubmit="return false">
+                                <input type="radio" name="mode" value="by-date"> 日にち順
+                                <input type="radio" name="mode" value="by-drug"> 薬剤別
+                            </form>
+                            <div id="control-box-submenu"></div>
+                        </div>
+                        <div class="visits-box" id="visits-box"></div>
+                    </div>
                 </td>
            </tr>
         </tbody>

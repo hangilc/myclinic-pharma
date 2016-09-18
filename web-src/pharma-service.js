@@ -73,13 +73,42 @@ exports.listDrugs = function(visitId, cb){ // list_full_drugs
 		{
 			drug_id: 1123,
 			visit_id: 1234,
-			iyakuhincode: 1111,
+			d_iyakuhincode: 1111,
 			name: "DRUG_NAME_1",
-			category: 0,
-			amount: "3",
+			d_category: 0,
+			d_amount: "3",
 			unit: "錠",
-			usage: "分３　毎食後",
-			days: "7"
+			d_usage: "分３　毎食後",
+			d_days: "7",
+			d_prescribed: 1
 		}
 	]);
 };
+
+exports.calcVisits = function(patientId, cb){
+	cb(undefined, 25);
+};
+
+exports.listFullVisits = function(patientId, offset, count, cb){
+	cb(undefined, [
+		{
+			v_datetime: "2016-09-18 18:05:12",
+			texts: [
+				{
+					content: "LINE_1\r\nLINE_2\r\nOFFSET " + offset + "\r\nCOUNT " + count
+				}
+			],
+			drugs: [
+				{
+					name: "DRUG_NAME_1",
+					d_category: 0,
+					d_amount: "3",
+					unit: "錠",
+					d_usage: "分３　毎食後",
+					d_days: "7",
+					d_prescribed: 1
+				}
+			]
+		}
+	]);
+}

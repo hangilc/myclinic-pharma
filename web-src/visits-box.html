@@ -1,0 +1,19 @@
+{{#list}}
+	<div>
+		<div class="visit-date">{{dateRep}}</div>
+		<table width="100%">
+			<tr style="vertical-align: top">
+				<td width="50%">
+					{{#texts}}
+						<div>{{& .}}</div>
+					{{/texts}}
+				</td>
+				<td width="50%">
+					{{#drugs}}
+						<div>{{.}}</div>
+					{{/drugs}}
+				</td>
+			</tr>
+		</table>
+	</div>
+{{/list}}

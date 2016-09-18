@@ -34,7 +34,7 @@ error-box { color: red; border: 1px solid red; margin: 4px 0; }
                        background-repeat: no-repeat; background-position: center left; }
 .pqueue .wait_drug { color: #800000; background-image: url("pack_done.bmp");
                        background-repeat: no-repeat; background-position: center left; }
-
+.pqueue-item { user-select: none; -webkit-user-select: none; -moz-user-select: none;}
 
 #packaging_box { border: 2px solid #f90; }
 #packaging_patient { margin: 4px; }
