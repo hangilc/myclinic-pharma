@@ -1400,7 +1400,7 @@
 	};
 
 	exports.calcVisits = function(patientId, cb){
-		cb(undefined, 25);
+		cb(undefined, 26);
 	};
 
 	exports.listFullVisits = function(patientId, offset, count, cb){
@@ -6185,25 +6185,87 @@
 
 	exports.setup = function(dom, patientId, nVisits){
 		var nPages = calcNumberOfPages(nVisits, visitsPerPage);
-		if( nPages > 1 ){
-			dom.innerHTML = tmpl.render({
-				current: 1,
-				total: nPages
-			});
-		} else {
-			dom.innerHTML = "";
-		}
 		var ctx = {
-			dom: dom,
 			patientId: patientId,
 			current: 1,
 			nPages: nPages
 		};
+		initDisp(dom, ctx);
 		startLoadVisits(dom, patientId, 1);
+		bindFirst(dom, ctx);
+		bindPrev(dom, ctx);
+		bindNext(dom, ctx);
+		bindLast(dom, ctx);
 	}
 
 	function calcNumberOfPages(total, perPage){
 		return Math.floor((total + perPage - 1) / perPage);
+	}
+
+	function initDisp(dom, ctx){
+		if( ctx.nPages > 1 ){
+			dom.innerHTML = tmpl.render({
+				current: ctx.current,
+				total: ctx.nPages
+			});
+		} else {
+			dom.innerHTML = "";
+		}
+	}
+
+	function updateDisp(dom, ctx){
+		var span = dom.querySelector(".visits-nav-current");
+		if( span ){
+			span.innerHTML = ctx.current;
+		}
+	}
+
+	function bindFirst(dom, ctx){
+		dom.querySelector(".visits-nav-first").addEventListener("click", function(event){
+			event.preventDefault();
+			event.stopPropagation();
+			if( ctx.current > 1 ){
+				ctx.current = 1;
+				updateDisp(dom, ctx);
+				startLoadVisits(dom, ctx.patientId, ctx.current);
+			}
+		});
+	}
+
+	function bindPrev(dom, ctx){
+		dom.querySelector(".visits-nav-prev").addEventListener("click", function(event){
+			event.preventDefault();
+			event.stopPropagation();
+			if( ctx.current > 1 ){
+				ctx.current -= 1;
+				updateDisp(dom, ctx);
+				startLoadVisits(dom, ctx.patientId, ctx.current);
+			}
+		});
+	}
+
+	function bindNext(dom, ctx){
+		dom.querySelector(".visits-nav-next").addEventListener("click", function(event){
+			event.preventDefault();
+			event.stopPropagation();
+			if( ctx.current < ctx.nPages ){
+				ctx.current += 1;
+				updateDisp(dom, ctx);
+				startLoadVisits(dom, ctx.patientId, ctx.current);
+			}
+		});
+	}
+
+	function bindLast(dom, ctx){
+		dom.querySelector(".visits-nav-last").addEventListener("click", function(event){
+			event.preventDefault();
+			event.stopPropagation();
+			if( ctx.current < ctx.nPages ){
+				ctx.current = ctx.nPages;
+				updateDisp(dom, ctx);
+				startLoadVisits(dom, ctx.patientId, ctx.current);
+			}
+		});
 	}
 
 	function startLoadVisits(dom, patientId, page){
@@ -6233,7 +6295,7 @@
 /* 15 */
 /***/ function(module, exports) {
 
-	module.exports = "<div>\r\n\t{{current}} / {{total}} \r\n\t<a href=\"javascript:void(0)\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\">&raquo;</a>\r\n</div>"
+	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n</div>"
 
 /***/ },
 /* 16 */

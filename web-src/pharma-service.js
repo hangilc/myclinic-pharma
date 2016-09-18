@@ -86,7 +86,7 @@ exports.listDrugs = function(visitId, cb){ // list_full_drugs
 };
 
 exports.calcVisits = function(patientId, cb){
-	cb(undefined, 25);
+	cb(undefined, 26);
 };
 
 exports.listFullVisits = function(patientId, offset, count, cb){
