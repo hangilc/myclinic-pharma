@@ -36,16 +36,14 @@
                                     </fieldset>
                                     <fieldset>
                                         <legend>
-                                            <a href="javascript:void(0)" style={{"textDecoration":"none"}} 
-                                                onClick={this.onToggle}>印刷設定</a>
+                                            <a href="javascript:void(0)" style="text-decoration:none">印刷設定</a>
                                         </legend>
                                         <div id="printer-setting-workspace"></div>
                                     </fieldset>     
                                     <fieldset>
                                         <legend>過去のお薬手帳</legend>
-                                        <form onSubmit={this.onSearchSubmit}>
-                                            <input type="text" style={{"marginRight": "6px"}} placeholder="患者番号"
-                                                value={this.state.searchText} onChange={this.onSearchTextChange}/>
+                                        <form onsubmit="return false">
+                                            <input type="text" style="margin-right:6px" placeholder="患者番号"/>
                                             <input type="submit" value="検索" />
                                             <div id="previous-techou-error" style="display:none"></div>
                                             <div id="previous-techou-patient"></div>
@@ -63,18 +61,18 @@
                         <div id="drug_list"></div>
                         <div id="print_buttons">
                             <div>
-                                <button onClick={this.printPrescContent}>処方内容印刷</button>
-                                <button onClick={this.printPresc}>薬袋印刷</button>
-                                <button onClick={this.printTechou}>薬手帳印刷</button>
+                                <button id="print-presc-button">処方内容印刷</button>
+                                <button id="print-all-drugbags-button">薬袋印刷</button>
+                                <button id="print-techou-button">薬手帳印刷</button>
                             </div>
                             <div style="margin-top: 4px">
-                                <button onClick={this.printAll}>*全部印刷*</button>
-                                <button onClick={this.printAllExceptTechou}>*全部印刷(薬手帳なし)*</button>
+                                <button id="print-all-button">*全部印刷*</button>
+                                <button id="print-all-except-techou-button">*全部印刷(薬手帳なし)*</button>
                             </div>
                         </div>
                         <div id="menu_2" style="text-align: right; margin: 0 10px 10px 0">
-                            <button onClick={this.onCancel}>キャンセル</button>
-                            <button onClick={this.onPrescDone}>薬渡し終了</button>
+                            <button id="cancel-packge-button">キャンセル</button>
+                            <button id="presc-done-button">薬渡し終了</button>
                         </div>
                     </div>
                     <div class="aux-info" id="aux-info" style="display:none">

@@ -17,6 +17,10 @@ var AuxInfo = require("./aux-info");
 var util = require("./util");
 var DrugBagData = require("./drugbag-data");
 
+var ctx ={
+	currentVisitId: 0
+};
+
 document.getElementById("refresh-button").addEventListener("click", function(event){
 	var resultList;
 	var includeAllPatientsChecked = includeAllPatients();
@@ -59,6 +63,7 @@ document.getElementById("start-chouzai-button").addEventListener("click", functi
 	var item = getSelectedPatientListItem();
 	if( item !== null ){
 		var visitId = item.getAttribute("data-visit-id");
+		ctx.currentVisitId = visitId;
 		setupPackagingInfo(visitId);
 		AuxInfo.open(visitId);
 	}
@@ -67,10 +72,7 @@ document.getElementById("start-chouzai-button").addEventListener("click", functi
 document.body.addEventListener("click", function(event){
 	if( event.target.classList.contains("print-drugbag-link") ){
 		var drug_id = event.target.getAttribute("data-drug-id");
-		var base = location.pathname;
-		if( base[base.length-1] !== "/" ){
-			base += "/";
-		}
+		var base = getBaseUrl();
 		window.open(base + "drugbag-preview.html?drug_id=" + drug_id, "_blank", "width=350,height=544");
 	}
 })
@@ -162,38 +164,47 @@ function makeBirthdayRep(birthday){
 	}
 }
 
-document.getElementById("blank-naifuku-button").addEventListener("click", function(event){
-	event.preventDefault();
+function getBaseUrl(){
 	var base = location.pathname;
 	if( base[base.length-1] !== "/" ){
 		base += "/";
 	}
+	return base;
+}
+
+document.getElementById("blank-naifuku-button").addEventListener("click", function(event){
+	event.preventDefault();
+	var base = getBaseUrl();
 	window.open(base + "drugbag-preview.html?blank=naifuku", "_blank", "width=350,height=544");
 });
 
 document.getElementById("blank-tonpuku-button").addEventListener("click", function(event){
 	event.preventDefault();
-	var base = location.pathname;
-	if( base[base.length-1] !== "/" ){
-		base += "/";
-	}
+	var base = getBaseUrl();
 	window.open(base + "drugbag-preview.html?blank=tonpuku", "_blank", "width=350,height=544");
 });
 
 document.getElementById("blank-gaiyou-button").addEventListener("click", function(event){
 	event.preventDefault();
-	var base = location.pathname;
-	if( base[base.length-1] !== "/" ){
-		base += "/";
-	}
+	var base = getBaseUrl();
 	window.open(base + "drugbag-preview.html?blank=gaiyou", "_blank", "width=350,height=544");
 });
 
 document.getElementById("blank-other-drugbag-button").addEventListener("click", function(event){
 	event.preventDefault();
-	var base = location.pathname;
-	if( base[base.length-1] !== "/" ){
-		base += "/";
-	}
+	var base = getBaseUrl();
 	window.open(base + "drugbag-preview.html?blank=other", "_blank", "width=350,height=544");
 });
+
+document.getElementById("print-presc-button").addEventListener("click", function(event){
+	var visitId = ctx.currentVisitId;
+	var base = getBaseUrl();
+	window.open(base + "presc-preview.html?visit_id=" + visitId, "_blank", "width=600,height=544");
+});
+
+document.getElementById("print-techou-button").addEventListener("click", function(event){
+	var visitId = ctx.currentVisitId;
+	var base = getBaseUrl();
+	window.open(base + "techou-preview.html?visit_id=" + visitId, "_blank", "width=400,height=544");
+})
+

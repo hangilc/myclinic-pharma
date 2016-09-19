@@ -6,6 +6,8 @@
   "scripts": {
     "build": "webpack web-src/main.js static/bundle.js",
     "build-drugbag": "webpack web-src/drugbag-main.js static/drugbag-bundle.js",
+    "build-presc": "webpack web-src/presc-main.js static/presc-bundle.js",
+    "build-techou": "webpack web-src/techou-main.js static/techou-bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
