@@ -107,6 +107,15 @@ exports.listFullVisits = function(patientId, offset, count, cb){
 					d_usage: "分３　毎食後",
 					d_days: "7",
 					d_prescribed: 1
+				},
+				{
+					name: "DRUG_NAME_2",
+					d_category: 0,
+					d_amount: "3",
+					unit: "錠",
+					d_usage: "分３　毎食後",
+					d_days: "7",
+					d_prescribed: 1
 				}
 			]
 		}
@@ -126,4 +135,41 @@ exports.listIyakuhinByPatient = function(patientId, cb){
 			yomi: "DRUG_YOMI_3"
 		}
 	]);
-}
+};
+
+exports.countVisitsByIyakuhincode = function(patientId, iyakuhincode, cb){
+	cb(undefined, 16);
+};
+
+exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
+	cb(undefined, [
+		{
+			v_datetime: "2016-08-18 09:05:12",
+			texts: [
+				{
+					content: "LINE_1\r\nLINE_2\r\nOFFSET " + offset + "\r\nCOUNT " + count
+				}
+			],
+			drugs: [
+				{
+					name: "DRUG_NAME_3",
+					d_category: 0,
+					d_amount: "3",
+					unit: "錠",
+					d_usage: "分３　毎食後",
+					d_days: "7",
+					d_prescribed: 1
+				},
+				{
+					name: "DRUG_NAME_4",
+					d_category: 0,
+					d_amount: "3",
+					unit: "錠",
+					d_usage: "分３　毎食後",
+					d_days: "7",
+					d_prescribed: 1
+				}
+			]
+		}
+	]);
+};

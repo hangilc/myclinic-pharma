@@ -1341,6 +1341,15 @@
 						d_usage: "分３　毎食後",
 						d_days: "7",
 						d_prescribed: 1
+					},
+					{
+						name: "DRUG_NAME_2",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
 					}
 				]
 			}
@@ -1360,7 +1369,44 @@
 				yomi: "DRUG_YOMI_3"
 			}
 		]);
-	}
+	};
+
+	exports.countVisitsByIyakuhincode = function(patientId, iyakuhincode, cb){
+		cb(undefined, 16);
+	};
+
+	exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
+		cb(undefined, [
+			{
+				v_datetime: "2016-08-18 09:05:12",
+				texts: [
+					{
+						content: "LINE_1\r\nLINE_2\r\nOFFSET " + offset + "\r\nCOUNT " + count
+					}
+				],
+				drugs: [
+					{
+						name: "DRUG_NAME_3",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					},
+					{
+						name: "DRUG_NAME_4",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					}
+				]
+			}
+		]);
+	};
 
 
 /***/ },
@@ -6105,128 +6151,7 @@
 	module.exports = "{{#list}}\r\n<div>\r\n\t{{index}}) \r\n\t{{rep}} <a href=\"javascript:void(0)\">薬袋</a>\r\n\t{{#d_prescribed}}<b>処方済</b>{{/d_prescribed}}\r\n</div>\r\n{{/list}}"
 
 /***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var hogan = __webpack_require__(3);
-	var tmplSrc = __webpack_require__(15);
-	var tmpl = hogan.compile(tmplSrc);
-	var service = __webpack_require__(6);
-	var task = __webpack_require__(1);
-
-	var visitsPerPage = 5;
-
-	exports.setup = function(dom, patientId, nVisits){
-		var nPages = calcNumberOfPages(nVisits, visitsPerPage);
-		var ctx = {
-			patientId: patientId,
-			current: 1,
-			nPages: nPages
-		};
-		initDisp(dom, ctx);
-		startLoadVisits(dom, patientId, 1);
-		bindFirst(dom, ctx);
-		bindPrev(dom, ctx);
-		bindNext(dom, ctx);
-		bindLast(dom, ctx);
-	}
-
-	function calcNumberOfPages(total, perPage){
-		return Math.floor((total + perPage - 1) / perPage);
-	}
-
-	function initDisp(dom, ctx){
-		if( ctx.nPages > 1 ){
-			dom.innerHTML = tmpl.render({
-				current: ctx.current,
-				total: ctx.nPages
-			});
-		} else {
-			dom.innerHTML = "";
-		}
-	}
-
-	function updateDisp(dom, ctx){
-		var span = dom.querySelector(".visits-nav-current");
-		if( span ){
-			span.innerHTML = ctx.current;
-		}
-	}
-
-	function bindFirst(dom, ctx){
-		dom.querySelector(".visits-nav-first").addEventListener("click", function(event){
-			event.preventDefault();
-			event.stopPropagation();
-			if( ctx.current > 1 ){
-				ctx.current = 1;
-				updateDisp(dom, ctx);
-				startLoadVisits(dom, ctx.patientId, ctx.current);
-			}
-		});
-	}
-
-	function bindPrev(dom, ctx){
-		dom.querySelector(".visits-nav-prev").addEventListener("click", function(event){
-			event.preventDefault();
-			event.stopPropagation();
-			if( ctx.current > 1 ){
-				ctx.current -= 1;
-				updateDisp(dom, ctx);
-				startLoadVisits(dom, ctx.patientId, ctx.current);
-			}
-		});
-	}
-
-	function bindNext(dom, ctx){
-		dom.querySelector(".visits-nav-next").addEventListener("click", function(event){
-			event.preventDefault();
-			event.stopPropagation();
-			if( ctx.current < ctx.nPages ){
-				ctx.current += 1;
-				updateDisp(dom, ctx);
-				startLoadVisits(dom, ctx.patientId, ctx.current);
-			}
-		});
-	}
-
-	function bindLast(dom, ctx){
-		dom.querySelector(".visits-nav-last").addEventListener("click", function(event){
-			event.preventDefault();
-			event.stopPropagation();
-			if( ctx.current < ctx.nPages ){
-				ctx.current = ctx.nPages;
-				updateDisp(dom, ctx);
-				startLoadVisits(dom, ctx.patientId, ctx.current);
-			}
-		});
-	}
-
-	function startLoadVisits(dom, patientId, page){
-		var resultList;
-		task.run([
-			function(done){
-				service.listFullVisits(patientId, (page-1)*visitsPerPage, visitsPerPage, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					resultList = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				alert(err);
-				return;
-			}
-			var evt = new CustomEvent("updatevisits", { detail: resultList, bubbles: true, cancelable: true });
-			dom.dispatchEvent(evt);
-		})
-	}
-
-/***/ },
+/* 14 */,
 /* 15 */
 /***/ function(module, exports) {
 
@@ -6246,33 +6171,93 @@
 
 	var task = __webpack_require__(1);
 	var service = __webpack_require__(6);
-	var VisitsNav = __webpack_require__(14);
 	var hogan = __webpack_require__(3);
+	var visitsNavTmplSrc = __webpack_require__(15);
+	var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
 	var visitsBoxTmplSrc = __webpack_require__(16);
 	var visitsBoxTmpl = hogan.compile(visitsBoxTmplSrc);
 	var kanjidate = __webpack_require__(8);
 	var util = __webpack_require__(18);
 	var submenuByDrugTmplSrc = __webpack_require__(19);
 	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
+	var submenuByDrugSelectedTmplSrc = __webpack_require__(20);
+	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
 
 	var wrapper = document.getElementById("aux-info");
+	var submenu = document.getElementById("control-box-submenu");
+	var visitsBox = document.getElementById("visits-box");
 
-	var ctx = {
-		visitId: 0,
-		patientId: 0,
-		byDate: {
-			current: 0,
-			nPages: 0
-		}
+	var ctx = initialCtx();
+	var visitsPerPage = 5;
+
+	function initialCtx(){
+		return {
+			visitId: 0,
+			patientId: 0,
+			byDate: {
+				current: 0,
+				nPages: 0
+			},
+			byDrug: {
+				drugs: [],
+				currentName: "",
+				currentIyakuhincode: 0,
+				currentPage: 1,
+				nPages: 0
+			}
+		};
 	}
 
 	exports.open = function(visitId){
-		ctx.visitId = visitId;
-		openAuxInfo(visitId);
+		ctx = initialCtx();
+		openByDate(visitId);
 	}
 
-	function openAuxInfo(visitId){
-		wrapper.querySelector(".control-box form input[name=mode][value=by-date]").checked = true;
+	function openByDate(visitId){
+		wrapper.querySelector("input[name=mode][value=by-date]").checked = true;
+		loadByDateData(visitId, function(err, result){
+			if( err ){
+				alert(err);
+				return;
+			}
+			ctx.visitId = result.visit.visit_id;
+			ctx.patientId = result.patient.patient_id;
+			ctx.byDate.current = 1;
+			ctx.byDate.nPages = calcNumberOfPages(result.nVisits, visitsPerPage);
+			renderSubmenuByDate();
+			updateVisitsByDate();
+			wrapper.style.display = "block";
+		})
+	}
+
+	function renderSubmenuByDate(){
+		if( ctx.byDate.nPages > 1 ){
+			var html = visitsNavTmpl.render({
+				current: ctx.byDate.current,
+				total: ctx.byDate.nPages
+			})
+			submenu.innerHTML = html;
+		} else {
+			submenu.innerHTML = "";
+		}
+	}
+
+	function renderSubmenuByDrug(){
+		var html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
+		submenu.innerHTML = html;
+	}
+
+	function renderSubmenuByDrugSelected(){
+		var html = submenuByDrugSelectedTmpl.render({
+			name: ctx.byDrug.currentName,
+			current: ctx.byDrug.currentPage,
+			total: ctx.byDrug.nPages,
+			requirePaging: ctx.byDrug.nPages > 1
+		});
+		submenu.innerHTML = html;
+	}
+
+	function loadByDateData(visitId, cb){
 		var visit, patient, nVisits;
 		task.run([
 			function(done){
@@ -6307,48 +6292,18 @@
 			}
 		], function(err){
 			if( err ){
-				alert(err);
+				cb(err);
 				return;
 			}
-			ctx.patientId = patient.patient_id;
-			VisitsNav.setup(document.getElementById("control-box-submenu"), patient.patient_id, nVisits);
-			wrapper.style.display = "block";
-		});
+			cb(undefined, {
+				visit: visit,
+				patient: patient,
+				nVisits: nVisits
+			})
+		});	
 	}
 
-	document.getElementById("aux-info").addEventListener("updatevisits", function(event){
-		var visits = event.detail;
-		var index = 1;
-		var list = visits.map(function(visit){
-			return {
-				dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
-				texts: visit.texts.map(function(text){
-					return text.content.replace(/\n/g, "<br />\n")
-				}),
-				drugs: visit.drugs.map(function(drug){
-					return index + ") " + util.drugRep(drug);
-				})
-			};
-		});
-		var html = visitsBoxTmpl.render({list: list});
-		document.getElementById("visits-box").innerHTML = html;
-	});
-
-	document.querySelectorAll("#aux-info input[name=mode]").forEach(function(e){
-		e.addEventListener("click", function(event){
-			var mode = event.target.value;
-			if( mode === "by-date" ){
-				alert("not implmented yet");
-			} else if( mode === "by-drug" ){
-				initSubmenuByDrug(ctx.patientId);
-			} else {
-				alert("unknown mode: " + mode);
-				return;
-			}
-		});
-	});
-
-	function initSubmenuByDrug(patientId){
+	function loadByDrugData(patientId, cb){
 		var resultList;
 		task.run([
 			function(done){
@@ -6366,11 +6321,232 @@
 				alert(err);
 				return;
 			}
-			var html = submenuByDrugTmpl.render({list: resultList});
-			wrapper.querySelector("#control-box-submenu").innerHTML = html;
-			wrapper.querySelector("#visits-box").innerHTML = "";
+			cb(undefined, resultList);
 		})
 	}
+
+	function updateVisitsByDate(){
+		var current = ctx.byDate.current;
+		if( current <= 0 ){
+			current = 1;
+		}
+		var resultList;
+		task.run([
+			function(done){
+				service.listFullVisits(ctx.patientId, (current-1)*visitsPerPage, visitsPerPage, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					resultList = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderVisits(resultList);
+		})
+	}
+
+	function updateVisitsByDrug(){
+		var current = ctx.byDrug.currentPage;
+		if( current <= 0 ){
+			current = 1;
+		}
+		var patientId = ctx.patientId;
+		var iyakuhincode = ctx.byDrug.currentIyakuhincode;
+		var offset = (current - 1) * visitsPerPage;
+		var resultList;
+		task.run([
+			function(done){
+				service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, visitsPerPage, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					resultList = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderVisits(resultList);
+		})
+	}
+
+	function calcNumberOfPages(total, perPage){
+		return Math.floor((total + perPage - 1) / perPage);
+	}
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-first") ){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current = 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-prev") ){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current -= 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-next") ){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current += 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-last") ){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current = ctx.byDate.nPages;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-first") ){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage = 1;
+				renderSubmenuByDrugSelected();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-prev") ){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage -= 1;
+				renderSubmenuByDrugSelected();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-next") ){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage += 1;
+				renderSubmenuByDrugSelected();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-last") ){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage = ctx.byDrug.nPages;
+				renderSubmenuByDrugSelected();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	submenu.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-item") ){
+			var iyakuhincode = +event.target.getAttribute("data-iyakuhincode");
+			var resultCount;
+			task.run([
+				function(done){
+					service.countVisitsByIyakuhincode(ctx.patientId, iyakuhincode, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						resultCount = result;
+						done();
+					})
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				ctx.byDrug.currentPage = 1;
+				ctx.byDrug.nPages = calcNumberOfPages(resultCount, visitsPerPage);
+				ctx.byDrug.currentName = "";
+				ctx.byDrug.currentIyakuhincode = 0;
+				for(var i=0;i<ctx.byDrug.drugs.length;i++){
+					var drug = ctx.byDrug.drugs[i];
+					if( drug.iyakuhincode === iyakuhincode ){
+						ctx.byDrug.currentName = drug.name;
+						ctx.byDrug.currentIyakuhincode = drug.iyakuhincode;
+						break;
+					}
+				}
+				renderSubmenuByDrugSelected();
+				updateVisitsByDrug();
+			})
+		}
+	});
+
+	submenu.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-goto-list") ){
+			renderSubmenuByDrug();
+			renderVisits([]);
+		}
+	});
+
+	function renderVisits(visits){
+		var index = 1;
+		var list = visits.map(function(visit){
+			return {
+				dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
+				texts: visit.texts.map(function(text){
+					return text.content.replace(/\n/g, "<br />\n")
+				}),
+				drugs: visit.drugs.map(function(drug){
+					return (index++) + ") " + util.drugRep(drug);
+				})
+			};
+		});
+		var html = visitsBoxTmpl.render({list: list});
+		visitsBox.innerHTML = html;
+	}
+
+	document.querySelectorAll("#aux-info input[name=mode]").forEach(function(e){
+		e.addEventListener("click", function(event){
+			var mode = event.target.value;
+			if( mode === "by-date" ){
+				alert("not implmented yet");
+			} else if( mode === "by-drug" ){
+				loadByDrugData(ctx.patientId, function(err, result){
+					if( err ){
+						alert(err);
+						return;
+					}
+					ctx.byDrug.drugs = result;
+					renderSubmenuByDrug();
+					renderVisits([]);
+				});
+			} else {
+				alert("unknown mode: " + mode);
+				return;
+			}
+		});
+	});
 
 
 
@@ -6404,7 +6580,13 @@
 /* 19 */
 /***/ function(module, exports) {
 
-	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\">{{name}}</a>\r\n\t</div>\r\n{{/list}}"
+	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}"
+
+/***/ },
+/* 20 */
+/***/ function(module, exports) {
+
+	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n{{#requirePaging}}\r\n<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-last\">&raquo;</a>\r\n</div>\r\n{{/requirePaging}}\r\n"
 
 /***/ }
 /******/ ]);
