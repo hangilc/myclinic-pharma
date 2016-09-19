@@ -173,3 +173,16 @@ exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset,
 		}
 	]);
 };
+
+exports.getFullDrug = function(drugId, cb){
+	cb(undefined, {
+		name: "DRUG_NAME_5",
+		d_iyakuhincode: 337834,
+		d_category: 0,
+		d_amount: "3",
+		unit: "錠",
+		d_usage: "分３　毎食後",
+		d_days: "7",
+		d_prescribed: 0
+	});	
+}

@@ -15,6 +15,7 @@ var drugListTmplSrc = require("raw!./drug-list.html");
 var drugListTmpl = hogan.compile(drugListTmplSrc);
 var AuxInfo = require("./aux-info");
 var util = require("./util");
+var DrugBagData = require("./drugbag-data");
 
 document.getElementById("refresh-button").addEventListener("click", function(event){
 	var resultList;
@@ -62,6 +63,19 @@ document.getElementById("start-chouzai-button").addEventListener("click", functi
 		AuxInfo.open(visitId);
 	}
 });
+
+document.body.addEventListener("click", function(event){
+	if( event.target.classList.contains("print-drugbag-link") ){
+		var drug_id = event.target.getAttribute("data-drug-id");
+		DrugBagData.composeData(drug_id, function(err, result){
+			if( err ){
+				alert(err);
+				return;
+			}
+			console.log(result);
+		})
+	}
+})
 
 function setupPackagingInfo(visitId){
 	var visit, patient, drugs;

@@ -1,7 +1,7 @@
 {{#list}}
 <div>
 	{{index}}) 
-	{{rep}} <a href="javascript:void(0)">薬袋</a>
+	{{rep}} <a href="javascript:void(0)" class="print-drugbag-link" data-drug-id="{{drug_id}}">薬袋</a>
 	{{#d_prescribed}}<b>処方済</b>{{/d_prescribed}}
 </div>
 {{/list}}
