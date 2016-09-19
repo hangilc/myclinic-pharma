@@ -15,5 +15,3 @@ exports.initApp = function(app, config){
 		res.send(html);
 	});
 };
-
-

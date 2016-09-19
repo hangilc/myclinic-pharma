@@ -23,11 +23,39 @@
                     <input type="checkbox" name="include-all-patients"> 処方済の患者も含める</input>
 					<button id="refresh-button">更新</button>
 					<button id="start-chouzai-button">調剤開始</button>
-					<table width="300px"><tbody><tr><td>
-						<PrintBlankDrugbags />
-						<PrinterSetting />
-                        <PreviousTechou />
-					</td></tr></tbody></table>
+					<table width="300px">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <fieldset>
+                                        <legend>手書き用薬袋印刷</legend>
+                                        <button id="blank-naifuku-button">内服薬</button>
+                                        <button id="blank-tonpuku-button">頓服薬</button>
+                                        <button id="blank-gaiyou-button">外用薬</button>
+                                        <button id="blank-other-drugbag-button" style="width: 4em">お薬</button>
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>
+                                            <a href="javascript:void(0)" style={{"textDecoration":"none"}} 
+                                                onClick={this.onToggle}>印刷設定</a>
+                                        </legend>
+                                        <div id="printer-setting-workspace"></div>
+                                    </fieldset>     
+                                    <fieldset>
+                                        <legend>過去のお薬手帳</legend>
+                                        <form onSubmit={this.onSearchSubmit}>
+                                            <input type="text" style={{"marginRight": "6px"}} placeholder="患者番号"
+                                                value={this.state.searchText} onChange={this.onSearchTextChange}/>
+                                            <input type="submit" value="検索" />
+                                            <div id="previous-techou-error" style="display:none"></div>
+                                            <div id="previous-techou-patient"></div>
+                                            <div id="previous-techou-visits"></div>
+                                        </form>
+                                    </fieldset>
+					            </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </td>   
 				<td style="vertical-align: top" width="520px">
                     <div id="packaging_box" style="display:none">

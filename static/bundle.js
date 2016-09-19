@@ -208,6 +208,41 @@
 		}
 	}
 
+	document.getElementById("blank-naifuku-button").addEventListener("click", function(event){
+		event.preventDefault();
+		var base = location.pathname;
+		if( base[base.length-1] !== "/" ){
+			base += "/";
+		}
+		window.open(base + "drugbag-preview.html?blank=naifuku", "_blank", "width=350,height=544");
+	});
+
+	document.getElementById("blank-tonpuku-button").addEventListener("click", function(event){
+		event.preventDefault();
+		var base = location.pathname;
+		if( base[base.length-1] !== "/" ){
+			base += "/";
+		}
+		window.open(base + "drugbag-preview.html?blank=tonpuku", "_blank", "width=350,height=544");
+	});
+
+	document.getElementById("blank-gaiyou-button").addEventListener("click", function(event){
+		event.preventDefault();
+		var base = location.pathname;
+		if( base[base.length-1] !== "/" ){
+			base += "/";
+		}
+		window.open(base + "drugbag-preview.html?blank=gaiyou", "_blank", "width=350,height=544");
+	});
+
+	document.getElementById("blank-other-drugbag-button").addEventListener("click", function(event){
+		event.preventDefault();
+		var base = location.pathname;
+		if( base[base.length-1] !== "/" ){
+			base += "/";
+		}
+		window.open(base + "drugbag-preview.html?blank=other", "_blank", "width=350,height=544");
+	});
 
 
 /***/ },
