@@ -67,13 +67,11 @@ document.getElementById("start-chouzai-button").addEventListener("click", functi
 document.body.addEventListener("click", function(event){
 	if( event.target.classList.contains("print-drugbag-link") ){
 		var drug_id = event.target.getAttribute("data-drug-id");
-		DrugBagData.composeData(drug_id, function(err, result){
-			if( err ){
-				alert(err);
-				return;
-			}
-			console.log(result);
-		})
+		var base = location.pathname;
+		if( base[base.length-1] !== "/" ){
+			base += "/";
+		}
+		window.open(base + "drugbag-preview.html?drug_id=" + drug_id, "_blank", "width=350,height=544");
 	}
 })
 

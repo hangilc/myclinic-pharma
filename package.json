@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack web-src/main.js static/bundle.js",
+    "build-drugbag": "webpack web-src/drugbag-main.js static/drugbag-bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +27,7 @@
     "myclinic-consts": "^1.0.0",
     "myclinic-drawer": "^1.0.4",
     "myclinic-drawer-forms": "^1.0.3",
+    "myclinic-drawer-svg": "^1.0.1",
     "raw-loader": "^0.5.1",
     "webpack": "^1.13.2"
   },

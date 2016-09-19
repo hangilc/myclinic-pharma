@@ -186,3 +186,10 @@ exports.getFullDrug = function(drugId, cb){
 		d_prescribed: 0
 	});	
 }
+
+exports.findPharmaDrug = function(drugId, cb){
+	cb(undefined, {
+		description: "DESCRIPTION",
+		sideeffect: "SIDEEFFECT"
+	})
+}

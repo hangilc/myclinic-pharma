@@ -113,13 +113,11 @@
 	document.body.addEventListener("click", function(event){
 		if( event.target.classList.contains("print-drugbag-link") ){
 			var drug_id = event.target.getAttribute("data-drug-id");
-			DrugBagData.composeData(drug_id, function(err, result){
-				if( err ){
-					alert(err);
-					return;
-				}
-				console.log(result);
-			})
+			var base = location.pathname;
+			if( base[base.length-1] !== "/" ){
+				base += "/";
+			}
+			window.open(base + "drugbag-preview.html?drug_id=" + drug_id, "_blank", "width=350,height=544");
 		}
 	})
 
@@ -1433,6 +1431,13 @@
 			d_days: "7",
 			d_prescribed: 0
 		});	
+	}
+
+	exports.findPharmaDrug = function(drugId, cb){
+		cb(undefined, {
+			description: "DESCRIPTION",
+			sideeffect: "SIDEEFFECT"
+		})
 	}
 
 
@@ -6641,7 +6646,7 @@
 	var DrawerCompiler = __webpack_require__(29).Compiler;
 
 	exports.composeData = function(drugId, cb){
-		var drug, visit, patient;
+		var drug, visit, patient, pharmaDrug;
 		task.run([
 			function(done){
 				service.getFullDrug(drugId, function(err, result){
@@ -6672,20 +6677,30 @@
 					patient = result;
 					done();
 				})
+			},
+			function(done){
+				service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					pharmaDrug = result;
+					done();
+				})
 			}
 		], function(err){
 			if( err ){
 				cb(err);
 				return;
 			}
-			console.log(drug, visit, patient);
 			var data = {
 				kind: drugCategoryToSlug(drug.d_category),
 				instructions: composeInstructions(drug.d_category, 
 	                drug.d_usage, drug.d_amount, drug.unit, drug.d_days, drug.d_iyakuhincode),
 				drug_name: composeDrugName(drug.name, drug.d_iyakuhincode),
 				patient_name: patient.last_name + " " + patient.first_name,
-				patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi
+				patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
+				desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : ""
 			}
 			cb(undefined, data);
 		})

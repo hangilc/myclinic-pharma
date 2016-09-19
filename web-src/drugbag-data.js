@@ -7,7 +7,7 @@ var DrugBag = require("myclinic-drawer-forms").DrugBag;
 var DrawerCompiler = require("myclinic-drawer").Compiler;
 
 exports.composeData = function(drugId, cb){
-	var drug, visit, patient;
+	var drug, visit, patient, pharmaDrug;
 	task.run([
 		function(done){
 			service.getFullDrug(drugId, function(err, result){
@@ -38,20 +38,30 @@ exports.composeData = function(drugId, cb){
 				patient = result;
 				done();
 			})
+		},
+		function(done){
+			service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				pharmaDrug = result;
+				done();
+			})
 		}
 	], function(err){
 		if( err ){
 			cb(err);
 			return;
 		}
-		console.log(drug, visit, patient);
 		var data = {
 			kind: drugCategoryToSlug(drug.d_category),
 			instructions: composeInstructions(drug.d_category, 
                 drug.d_usage, drug.d_amount, drug.unit, drug.d_days, drug.d_iyakuhincode),
 			drug_name: composeDrugName(drug.name, drug.d_iyakuhincode),
 			patient_name: patient.last_name + " " + patient.first_name,
-			patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi
+			patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
+			desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : ""
 		}
 		cb(undefined, data);
 	})

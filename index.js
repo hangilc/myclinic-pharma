@@ -13,7 +13,7 @@ exports.initApp = function(app, config){
 			baseUrl: req.baseUrl
 		});
 		res.send(html);
-	})
+	});
 };
 
 
