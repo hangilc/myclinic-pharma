@@ -118,8 +118,7 @@
 	document.body.addEventListener("click", function(event){
 		if( event.target.classList.contains("print-drugbag-link") ){
 			var drug_id = event.target.getAttribute("data-drug-id");
-			var base = getBaseUrl();
-			window.open(base + "drugbag-preview.html?drug_id=" + drug_id, "_blank", "width=350,height=544");
+			window.open("drugbag-preview.html?drug_id=" + drug_id, "_blank", "width=350,height=544");
 		}
 	})
 
@@ -210,48 +209,34 @@
 		}
 	}
 
-	function getBaseUrl(){
-		var base = location.pathname;
-		if( base[base.length-1] !== "/" ){
-			base += "/";
-		}
-		return base;
-	}
-
 	document.getElementById("blank-naifuku-button").addEventListener("click", function(event){
 		event.preventDefault();
-		var base = getBaseUrl();
-		window.open(base + "drugbag-preview.html?blank=naifuku", "_blank", "width=350,height=544");
+		window.open("drugbag-preview.html?blank=naifuku", "_blank", "width=350,height=544");
 	});
 
 	document.getElementById("blank-tonpuku-button").addEventListener("click", function(event){
 		event.preventDefault();
-		var base = getBaseUrl();
-		window.open(base + "drugbag-preview.html?blank=tonpuku", "_blank", "width=350,height=544");
+		window.open("drugbag-preview.html?blank=tonpuku", "_blank", "width=350,height=544");
 	});
 
 	document.getElementById("blank-gaiyou-button").addEventListener("click", function(event){
 		event.preventDefault();
-		var base = getBaseUrl();
-		window.open(base + "drugbag-preview.html?blank=gaiyou", "_blank", "width=350,height=544");
+		window.open("drugbag-preview.html?blank=gaiyou", "_blank", "width=350,height=544");
 	});
 
 	document.getElementById("blank-other-drugbag-button").addEventListener("click", function(event){
 		event.preventDefault();
-		var base = getBaseUrl();
-		window.open(base + "drugbag-preview.html?blank=other", "_blank", "width=350,height=544");
+		window.open("drugbag-preview.html?blank=other", "_blank", "width=350,height=544");
 	});
 
 	document.getElementById("print-presc-button").addEventListener("click", function(event){
 		var visitId = ctx.currentVisitId;
-		var base = getBaseUrl();
-		window.open(base + "presc-preview.html?visit_id=" + visitId, "_blank", "width=600,height=544");
+		window.open("presc-preview.html?visit_id=" + visitId, "_blank", "width=600,height=400");
 	});
 
 	document.getElementById("print-techou-button").addEventListener("click", function(event){
 		var visitId = ctx.currentVisitId;
-		var base = getBaseUrl();
-		window.open(base + "techou-preview.html?visit_id=" + visitId, "_blank", "width=400,height=544");
+		window.open("techou-preview.html?visit_id=" + visitId, "_blank", "width=400,height=544");
 	})
 
 
@@ -1336,7 +1321,7 @@
 		cb(undefined, {
 			visit_id: 1234,
 			patient_id: 2239,
-			v_datetime: "2016-0918 14:38:12",
+			v_datetime: "2016-09-18 14:38:12",
 			shahokokuho_id: 0,
 			koukikourei_id: 0,
 			roujin_id: 0,
@@ -6649,6 +6634,7 @@
 	"use strict";
 
 	var mConsts = __webpack_require__(7);
+	var conti = __webpack_require__(2);
 
 	exports.drugRep = function(drug){
 		var category = parseInt(drug.d_category, 10);
@@ -6665,6 +6651,47 @@
 				return drug.name + " " + drug.d_amount + drug.unit;
 		}
 	};
+
+	exports.request = function(url, data, method, timeout, cb){
+		data = data || {};
+		method = method || "GET";
+		var searchParams = new URLSearchParams();
+		var opt = {
+			method: method,
+			headers: {}
+		};
+		if( method === "GET" ){
+			Object.keys(data).forEach(function(key){
+				searchParams.append(key, data[key]);
+			});
+		}
+		if( method === "POST" ){
+			if( typeof data === "string" ){
+				opt.body = data;
+			} else {
+				opt.body = JSON.stringify(data);
+			}
+			opt.headers["content-type"] = "application/json";
+		}
+		var done = false;
+		var timer = setTimeout(function(){
+			timer = null;
+			if( !done ){
+				done = true;
+				cb("TIMEOUT");
+			}
+		}, timeout);
+		url += "?" + searchParams.toString();
+		conti.fetchJson(url, opt, function(err, result){
+			if( timer ){
+				clearTimeout()
+			}
+			if( !done ){
+				done = true;
+				cb(err, result);
+			}
+		});
+	}
 
 
 /***/ },
@@ -6689,7 +6716,7 @@
 	var task = __webpack_require__(1);
 	var mConsts = __webpack_require__(7);
 	var DrugBag = __webpack_require__(21).DrugBag;
-	var DrawerCompiler = __webpack_require__(29).Compiler;
+	var DrawerCompiler = __webpack_require__(23).Compiler;
 
 	exports.composeData = function(drugId, cb){
 		var drug, visit, patient, pharmaDrug;
@@ -7026,6 +7053,8 @@
 	exports.Shohousen = __webpack_require__(22);
 	exports.Refer = __webpack_require__(27);
 	exports.DrugBag = __webpack_require__(28);
+	exports.PrescContent = __webpack_require__(29);
+
 
 
 
@@ -8794,843 +8823,77 @@
 
 	"use strict";
 
-	var Ops = __webpack_require__(30);
-	var Box = __webpack_require__(31);
-	var Compiler = __webpack_require__(32);
+	var Compiler = __webpack_require__(23).Compiler;
+	var Box = __webpack_require__(23).Box;
 
-	exports.op = Ops;
-	exports.Box = Box;
-	exports.Compiler = Compiler;
+	exports.getOps = function(data, config){
+	    config = setup(config || {});
+		var comp = new Compiler();
+		var lines = [];
+		lines.push(data.name + "様" + " " + data.at);
+		lines.push("");
+		lines = lines.concat(drugPart(data.drugs));
+		lines.push("");
+		lines = lines.concat(data.clinic);
+		comp.createFont("regular", "MS Gothic", config.fontSize);
+		comp.setFont("regular");
+		var box = new Box(0, 0, config.width, 210).inset(config.inset);
+		lines = breakToParagraph(comp, lines, box.width());
+		comp.multilineText(lines, box, "left", "top");
+		return comp.getOps();
 
-
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	exports.moveTo = function(x, y){
-		return ["move_to", x, y];
+	    function setup(config){
+	        var defaultConfig = {
+	            fontSize: 4.6,
+	            inset: 5,
+	            width: 148
+	        }
+	        for(var key in config){
+	            defaultConfig[key] = config[key];
+	        }
+	        return defaultConfig;
+	    }
 	};
 
-	exports.lineTo = function(x, y){
-		return ["line_to", x, y];
+	function breakToParagraph(compiler, lines, width){
+		var result = [];
+		lines.forEach(function(line){
+			var lines = compiler.breakLines(line, width);
+			result = result.concat(lines);
+		});
+		return result;
 	}
 
-	exports.createFont = function(name, fontName, size, weight, italic){
-		weight = weight ? 1 : 0;
-		italic = italic ? 1 : 0;
-		return ["create_font", name, fontName, size, weight, italic];
-	};
-
-	exports.setFont = function(name){
-		return ["set_font", name];
-	};
-
-	exports.drawChars = function(chars, x_or_xs, y_or_ys){
-		return ["draw_chars", chars, x_or_xs, y_or_ys];
+	function drugPart(drugs){
+		return drugs.map(function(drug, index){
+			return (index+1)+") " + drug;
+		});
 	}
 
-	// exports.drawText = function(text, x, y, halign, valign){
-	// 	return ["draw_text", text, x, y, halign, valign];
-	// };
+	// function clinicPart(){
+	// 	return [
+	//         "CLINIC_NAME",
+	//         "CLINIC_ADDRESS",
+	//         "CLINIC_PHONE",
+	//         "CLINIC_DOCTOR"
+	// 	];
+	// }
 
-	// exports.drawTextJustified = function(text, left, right, y, valign){
-	// 	return ["draw_text_justified", text, left, right, y, valign];
-	// };
-
-	exports.setTextColor = function(r, g, b){
-		return ["set_text_color", r, g, b];
-	};
-
-	exports.createPen = function(name, r, g, b, opt_width){
-		var width = opt_width === undefined ? 0.1 : opt_width;
-		return ["create_pen", name, r, g, b, width];
-	};
-
-	exports.setPen = function(name){
-		return ["set_pen", name];
-	};
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	function Box(left, top, right, bottom){
-		this.left_ = left;
-		this.top_ = top;
-		this.right_ = right;
-		this.bottom_ = bottom;
-	}
-
-	Box.prototype.clone = function(){
-		return new Box(this.left_, this.top_, this.right_, this.bottom_);
-	}
-
-	Box.prototype.innerBox = function(left, top, right, bottom){
-		return new Box(this.left_ + left, this.top_ + top, this.left_ + right, this.top_ + bottom);
-	};
-
-	Box.prototype.left = function(){
-		return this.left_;
-	};
-
-	Box.prototype.top = function(){
-		return this.top_;
-	};
-
-	Box.prototype.right = function(){
-		return this.right_;
-	};
-
-	Box.prototype.bottom = function(){
-		return this.bottom_;
-	};
-
-	Box.prototype.width = function(){
-		return this.right_ - this.left_;
-	};
-
-	Box.prototype.height = function(){
-		return this.bottom_ - this.top_;
-	};
-
-	Box.prototype.cx = function(){
-		return (this.left_ + this.right_)/2;
-	};
-
-	Box.prototype.cy = function(){
-		return (this.top_ + this.bottom_)/2;
-	};
-
-	Box.prototype.setLeft = function(left){
-		this.left_ = left;
-		return this;
-	};
-
-	Box.prototype.displaceLeftEdge = function(dx){
-	    this.left_ += dx;
-	    return this;
-	}
-
-	Box.prototype.setTop = function(top){
-		this.top_ = top;
-		return this;
-	}
-
-	Box.prototype.setRight = function(right){
-		this.right_ = right;
-		return this;
-	};
-
-	Box.prototype.displaceRightEdge = function(dx){
-	    this.right_ += dx;
-	    return this;
-	}
-
-	Box.prototype.setBottom = function(bottom){
-		this.bottom_ = bottom;
-		return this;
-	}
-
-	Box.prototype.inset = function(dx, dy){
-		if( dy === undefined ){
-			dy = dx;
+	exports.drugRep = function(drug){
+		var category = parseInt(drug.d_category, 10);
+		switch(category){
+			case mConsts.DrugCategoryNaifuku:
+				return drug.name + " " + drug.d_amount + drug.unit + " " + drug.d_usage + 
+					" " + drug.d_days + "日分";
+			case mConsts.DrugCategoryTonpuku:
+				return drug.name + " １回 " + drug.d_amount + drug.unit + " " + drug.d_usage +
+					" " + drug.d_days + "回分";
+			case mConsts.DrugCategoryGaiyou:
+				return drug.name + " " + drug.d_amount + drug.unit + " " + drug.d_usage;
+			default:
+				return drug.name + " " + drug.d_amount + drug.unit;
 		}
-		this.left_ += dx;
-		this.top_ += dy;
-		this.right_ -= dx;
-		this.bottom_ -= dy;
-		return this;
 	};
-
-	Box.prototype.inset4 = function(dxLeft, dyTop, dxRight, dyBottom){
-		this.left_ += dxLeft;
-		this.top_ += dyTop;
-		this.right_ -= dxRight;
-		this.bottom_ -= dyBottom;
-		return this;
-	};
-
-	Box.prototype.shift = function(dx, dy){
-		this.left_ += dx;
-		this.top_ += dy;
-		this.right_ += dx;
-		this.bottom_ += dy;	
-		return this;
-	};
-
-	Box.prototype.shiftUp = function(dy){
-		return this.shift(0, -dy);
-	};
-
-	Box.prototype.shiftDown = function(dy){
-		return this.shift(0, dy);
-	};
-
-	Box.prototype.shiftToRight = function(dx){
-		return this.shift(dx, 0);
-	}
-
-	Box.prototype.shiftToLeft = function(dx){
-		return this.shift(-dx, 0);
-	}
-
-	Box.prototype.shrinkWidth = function(dx, anchor){
-		var half;
-		switch(anchor){
-			case "left": this.right_ -= dx; break;
-			case "center": half = dx/2; this.left_ += dx; this.right_ -= dx; break;
-			case "right": this.left_ += dx; break;
-			default: throw new Error("invalid anchor:" + anchor);
-		}
-		return this;
-	};
-
-	Box.prototype.shrinkHeight = function(dy, anchor){
-		var half;
-		switch(anchor){
-			case "top": this.bottom_ -= dy; break;
-			case "center":
-				half = dy/2;
-				this.top_ += half;
-				this.bottom_ -= half;
-				break;
-			case "bottom": this.top_ += dy; break;
-			default: throw new Error("invalid anchor:" + anchor);
-		}
-		return this;
-	}
-
-	Box.prototype.setWidth = function(width, anchor){
-		switch(anchor){
-			case "left": this.right_ = this.left_ + width; break;
-			case "center": 
-				this.left_ = this.cx() - width/2;
-				this.right_ = this.left_ + width;
-				break;
-			case "right": this.left_ = this.right_ - width; break;
-			default: throw new Error("invalid anchor:" + anchor);
-		}
-		return this;
-	}
-
-	Box.prototype.setHeight = function(height, anchor){
-		switch(anchor){
-			case "top": this.bottom_ = this.top_ + height; break;
-			case "center": 
-				this.top_ = this.cy() - height/2;
-				this.bottom_ = this.top_ + height;
-				break;
-			case "bottom": this.top_ = this.bottom_ - height; break;
-			default: throw new Error("invalid anchor:" + anchor);
-		}
-		return this;
-	};
-
-	Box.prototype.flipRight = function(){
-		var w = this.width();
-		this.left_ = this.right_;
-		this.right_ = this._left + w;
-		return this;
-	}
-
-	Box.prototype.splitToColumns = function(){
-		var divs = Array.prototype.slice.apply(arguments);
-		var boxes = [], i, n = divs.length, left, top, right, bottom;
-		top = this.top_;
-		bottom = this.bottom_;
-		for(i=0;i<=n;i++){
-			left = this.left_ + (i === 0 ? 0 : divs[i-1]);
-			right = i === n ? this.right_ : (this.left_ + divs[i]);
-			boxes.push(new Box(left, top, right, bottom));
-		}
-		return boxes;
-	};
-
-	Box.prototype.splitToRows = function(){
-		var divs = Array.prototype.slice.apply(arguments);
-		var boxes = [], i, n = divs.length, left, top, right, bottom;
-		left = this.left_;
-		right = this.right_;
-		for(i=0;i<=n;i++){
-			top = this.top_ + (i === 0 ? 0 : divs[i-1]);
-			bottom = i === n ? this.bottom_ : (this.top_ + divs[i]);
-			boxes.push(new Box(left, top, right, bottom));
-		}
-		return boxes;
-	};
-
-	Box.prototype.splitToEvenColumns = function(nCols){
-		var w = this.width() / nCols, divs = [], i;
-		for(i=1;i<nCols;i++){
-			divs.push(w*i);
-		}
-		return this.splitToColumns.apply(this, divs);
-	}
-
-	Box.prototype.splitToEvenRows = function(nRows){
-		var h = this.height() / nRows, divs = [];
-		var i;
-		for(i=1;i<nRows;i++){
-			divs.push(h*i);
-		}
-		return this.splitToRows.apply(this, divs);
-	}
-
-	Box.prototype.splitToEvenCells = function(nrows, ncols){
-	    var rows = this.splitToEvenRows(nrows);
-	    return rows.map(function(row){
-	        return row.splitToEvenColumns(ncols);
-	    });
-	}
-
-	function boundingBox2(a, b){
-		var left = Math.min(a.left(), b.left());
-		var top = Math.min(a.top(), b.top());
-		var right = Math.max(a.right(), b.right());
-		var bottom = Math.max(a.bottom(), b.bottom());
-		return new Box(left, top, right, bottom);
-	}
-
-	Box.boundingBox = function(){
-		var args = Array.prototype.slice.call(arguments);
-		return args.reduce(function(curr, box){
-			if( curr === null ) return box;
-			return boundingBox2(curr, box);
-		}, null);
-	}
-
-	var PAPER_A4 = [210, 297];  // mm
-	var PAPER_A5 = [148, 210];
-	var PAPER_A5_landscape = [210, 148];
-	var PAPER_A6 = [105, 148];
-	var PAPER_B4 = [257, 364];
-	var PAPER_B5 = [182, 257];
-
-	Box.createA4Box = function(){
-		return new Box(0, 0, PAPER_A4[0], PAPER_A4[1]);
-	}
-
-	Box.createA5Box = function(){
-		return new Box(0, 0, PAPER_A5[0], PAPER_A5[1]);
-	}
-
-	Box.createA5LandscapeBox = function(){
-		return new Box(0, 0, PAPER_A5_landscape[0], PAPER_A5_landscape[1]);
-	}
-
-	Box.createA6Box = function(){
-		return new Box(0, 0, PAPER_A6[0], PAPER_A6[1]);
-	}
-
-	Box.createB4Box = function(){
-		return new Box(0, 0, PAPER_B4[0], PAPER_B4[1]);
-	}
-
-	Box.createB5Box = function(){
-		return new Box(0, 0, PAPER_B5[0], PAPER_B5[1]);
-	}
-
-	module.exports = Box;
-
-
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var drawerOps = __webpack_require__(30);
-	var Box = __webpack_require__(31);
-
-	function DrawerCompiler(){
-	    this.ops = [];
-	    this.fontDict = {}; // name => size
-	    this.pointDict = {};
-	    this.boxDict = {};
-	    this.currentFontSize = null;
-	}
-
-	module.exports = DrawerCompiler;
-
-	function sum(list, key){
-	    return list.reduce(function(val, item){
-	        if( key === undefined ){
-	            return val + item;
-	        } else {
-	            return val + item[key];
-	        }
-	    }, 0);
-	}
-
-	function isHankaku(code){
-	    return (code >= 0xff61 && code <= 0xff64) ||
-	        (code >= 0xff65 && code <= 0xff9f) ||
-	        (code >= 0xffa0 && code <= 0xffdc) ||
-	        (code >= 0xffe8 && code <= 0xffee);
-	}
-
-	function charWidth(code, fontSize){
-	    if( code < 256 || isHankaku(code) ){
-	        return fontSize/2;
-	    } else {
-	        return fontSize;
-	    }
-	}
-
-	function measureChars(str, fontSize){
-	    return str.split("").map(function(ch){
-	        return {
-	            ch: ch,
-	            width: charWidth(ch.charCodeAt(0), fontSize)
-	        }
-	    })
-	}
-
-	function calcTotalWidth(mes){
-	    return sum(mes, "width");
-	}
-
-	DrawerCompiler.measureChars = measureChars;
-
-	function min(args){
-	    return Math.min.apply(Math, args);
-	}
-
-	function max(args){
-	    return Math.max.apply(Math, args);
-	}
-
-	function breakLines(str, width, fontSize){
-	    var parts = measureChars(str, fontSize);
-	    var i, len;
-	    var lines = [];
-	    var curChars = [], curWidth = 0, nextWidth, part;
-	    for(i=0,len=parts.length;i<len;){
-	        part = parts[i];
-	        if( curWidth === 0 ){
-	            if( part.ch === " " ){
-	                i += 1;
-	            } else {
-	                curChars.push(part.ch);
-	                curWidth = part.width;
-	                i += 1;
-	            }
-	        } else {
-	            nextWidth = curWidth + part.width;
-	            if( nextWidth > width ){
-	                lines.push(curChars.join(""));
-	                curChars = [];
-	                curWidth = 0;
-	            } else {
-	                curChars.push(part.ch);
-	                curWidth = nextWidth;
-	                i += 1;
-	            }
-	        }
-	    }
-	    if( curChars.length > 0 ){
-	        lines.push(curChars.join(""));
-	    }
-	    if( lines.length === 0 ){
-	        lines = [""];
-	    }
-	    return lines;
-	}
-
-	DrawerCompiler.breakLines = breakLines;
-
-	DrawerCompiler.prototype.getOps = function(){
-	    return this.ops;
-	}
-
-	DrawerCompiler.prototype.moveTo = function(x, y){
-	    this.ops.push(drawerOps.moveTo(x, y));
-	};
-
-	DrawerCompiler.prototype.lineTo = function(x, y){
-	    this.ops.push(drawerOps.lineTo(x, y));
-	};
-
-	DrawerCompiler.prototype.line = function(x1, y1, x2, y2){
-	    this.moveTo(x1, y1);
-	    this.lineTo(x2, y2);
-	};
-
-	DrawerCompiler.prototype.rectangle = function(left, top, right, bottom){
-	    this.moveTo(left, top);
-	    this.lineTo(right, top);
-	    this.lineTo(right, bottom);
-	    this.lineTo(left, bottom);
-	    this.lineTo(left, top);
-	};
-
-	DrawerCompiler.prototype.box = function(box){
-	    this.rectangle(box.left(), box.top(), box.right(), box.bottom());
-	}
-
-	DrawerCompiler.prototype.createFont = function(name, fontName, fontSize, weight, italic){
-	    if( name in this.fontDict ) return;
-	    this.ops.push(drawerOps.createFont(name, fontName, fontSize, weight, italic));
-	    this.fontDict[name] = fontSize;
-	};
-
-	DrawerCompiler.prototype.setFont = function(name){
-	    this.ops.push(drawerOps.setFont(name));
-	    this.currentFontSize = this.fontDict[name];
-	};
-
-	function composeXs(mes, left, extra){
-	    var i, n = mes.length, xs = [];
-	    for(i=0;i<n;i++){
-	        xs.push(left);
-	        left += mes[i].width;
-	        if( extra ){
-	            left += extra;
-	        }
-	    }
-	    return xs;
-	}
-
-	function composeYs(nchars, top, fontSize, extra){
-	    var ys = [];
-	    var i;
-	    for(i=0;i<nchars;i++){
-	        ys.push(top);
-	        top += fontSize;
-	        if( extra ){
-	            top += extra;
-	        }
-	    }
-	    return ys;
-	}
-
-	DrawerCompiler.prototype.textAt = function(text, x, y, halign, valign, opt){
-	    if( opt === undefined ) opt = {};
-	    var extraSpace = opt.extraSpace || 0;
-	    var fontSize = this.getCurrentFontSize();
-	    var mes = measureChars(text, fontSize);
-	    var totalWidth = sum(mes, "width") + (text.length > 1 ? (text.length - 1) * extraSpace : 0);
-	    var left, top;
-	    switch(halign){
-	        case "left": left = x; break;
-	        case "center": left = x - totalWidth/2.0; break;
-	        case "right": left = x - totalWidth; break;
-	        default: throw new Error("invalid halign: " + halign);
-	    }
-	    switch(valign){
-	        case "top": top = y; break;
-	        case "center": top = y - fontSize/2; break;
-	        case "bottom": top = y - fontSize; break;
-	        default: throw new Error("invalid valign: " + valign);
-	    }
-	    var xs = composeXs(mes, left, extraSpace);
-	    var ys = top;
-	    this.ops.push(drawerOps.drawChars(text, xs, ys));
-	    return new Box(left, top, left + totalWidth, top + fontSize);
-	}
-
-	DrawerCompiler.prototype.textAtJustified = function(text, left, right, y, valign){
-	    var fontSize = this.getCurrentFontSize();
-	    var mes = measureChars(text, fontSize);
-	    var totalWidth = sum(mes, "width");
-	    var top, extra, xs;
-	    if( text.length < 2 ){
-	        return this.textAt(text, left, y, "left", valign);
-	    } else {
-	        switch(valign){
-	            case "top": top = y; break;
-	            case "center": top = y - fontSize/2; break;
-	            case "bottom": top = y - fontSize; break;
-	            default: throw new Error("invalid valign: " + valign);
-	        }
-	        extra = ((right - left) - totalWidth) / (text.length - 1);
-	        xs = composeXs(mes, left, extra);
-	        this.ops.push(drawerOps.drawChars(text, xs, top));
-	        return new Box(left, top, right, top + fontSize);
-	    }
-	}
-
-	DrawerCompiler.prototype.textAtVert = function(text, x, y, halign, valign){
-	    var fontSize = this.getCurrentFontSize();
-	    var mes = measureChars(text, fontSize);
-	    var totalHeight = fontSize * mes.length;
-	    var xs, top, ys;
-	    xs = mes.map(function(m){
-	        switch(halign){
-	            case "left": return x;
-	            case "center": return x - m.width / 2.0;
-	            case "right": return x - m.width;
-	            default: throw new Error("invalid halign: " + halign);
-	        }
-	    });
-	    switch(valign){
-	        case "top": top = y; break;
-	        case "center": top = y - totalHeight/2; break;
-	        case "bottom": top = y - totalHeight; break;
-	        default: throw new Error("invalid valign: " + valign);
-	    }
-	    ys = composeYs(mes.length, top, fontSize);
-	    this.ops.push(drawerOps.drawChars(text, xs, ys));
-	    return new Box(min(xs), top, max(xs), top + totalHeight);
-	}
-
-	DrawerCompiler.prototype.textAtVertJustified = function(text, x, top, bottom, halign){
-	    var fontSize = this.getCurrentFontSize();
-	    var mes = measureChars(text, fontSize);
-	    var xs, ys, totalHeight, extra;
-	    if( text.length < 2 ){
-	        return this.textAt(text, x, top, halign, "top");
-	    } else {
-	        xs = mes.map(function(m){
-	            switch(halign){
-	                case "left": return x;
-	                case "center": return x - m.width / 2.0;
-	                case "right": return x - m.width;
-	                default: throw new Error("invalid halign: " + halign);
-	            }
-	        });
-	        totalHeight = fontSize * mes.length;
-	        extra = ((bottom - top) - totalHeight) / (mes.length - 1);
-	        ys = composeYs(mes.length, top, fontSize, extra);
-	        this.ops.push(drawerOps.drawChars(text, xs, ys));
-	        return new Box(min(xs), top, max(xs), bottom);
-	    }
-	}
-
-	DrawerCompiler.prototype.textIn = function(text, box, halign, valign, direction){
-	    var x, y;
-	    if( halign !== "justified" ){
-	        switch(halign){
-	            case "left": x = box.left(); break;
-	            case "center": x = box.cx(); break;
-	            case "right": x = box.right(); break;
-	            default: throw new Error("invalid halign:" + halign);
-	        }
-	    }
-	    if( valign !== "justified" ){
-	        switch(valign){
-	            case "top": y = box.top(); break;
-	            case "center": y = box.cy(); break;
-	            case "bottom": y = box.bottom(); break;
-	            default: throw new Error("invalid valign: " + valign);
-	        }
-	    }
-	    if( direction === undefined ) direction = "horizontal";
-	    if( direction === "horizontal" ){
-	        if( halign === "justified" ){
-	            return this.textAtJustified(text, box.left(), box.right(), y, valign);
-	        } else {
-	            return this.textAt(text, x, y, halign, valign);
-	        }
-	    } else if( direction === "vertical" ){
-	        if( valign === "justified" ){
-	            return this.textAtVertJustified(text, x, box.top(), box.bottom(), halign);
-	        } else {
-	            return this.textAtVert(text, x, y, halign, valign);
-	        }
-	    } else {
-	        throw new Error("invalid direction: " + direction);
-	    }
-	}
-
-	DrawerCompiler.prototype.textInEvenColumns = function(text, box, nCols, justifyTo){
-	    var textLength = text.length, i, cols, j;
-	    if( justifyTo === undefined ){
-	        justifyTo = "left";
-	    }
-	    if( justifyTo === "left" ){
-	        i = 0;
-	    } else if( justifyTo === "right" ){
-	        i = nCols - textLength;
-	        if( i < 0 ){
-	            console.log("too few columns in textInEvenColumns", text, nCols)
-	            throw new Error("too few columns");
-	        }
-	    } else {
-	        throw new Error("invalid justifyTo: " + justifyTo);
-	    }
-	    cols = box.splitToEvenColumns(nCols);
-	    for(j=0;i<nCols;i++,j++){
-	        this.textIn(text[j], cols[i], "center", "center");
-	    }
-	}
-
-	DrawerCompiler.prototype.setTextColor = function(r, g, b){
-	    if( r instanceof Array ){
-	        (function(){
-	            var color = r;
-	            r = color[0];
-	            g = color[1];
-	            b = color[2];
-	        })();
-	    }
-	    this.ops.push(["set_text_color", r, g, b]);
-	};
-
-	DrawerCompiler.prototype.createPen = function(name, r, g, b, width){
-	    if( r instanceof Array ){
-	        (function(){
-	            var color = r;
-	            width = g === undefined ? 0.1 : g;
-	            r = color[0];
-	            g = color[1];
-	            b = color[2];
-	        })();
-	    } else {
-	        if( width === undefined ){
-	            width = 0.1;
-	        }
-	    }
-	    this.ops.push(["create_pen", name, r, g, b, width]);
-	};
-
-	DrawerCompiler.prototype.setPen = function(name){
-	    this.ops.push(["set_pen", name]);
-	};
-
-	DrawerCompiler.prototype.getCurrentFont = function(){
-	    return this.currentFont;
-	};
-
-	DrawerCompiler.prototype.getFontInfo = function(name){
-	    return this.fontDict[name];
-	};
-
-	DrawerCompiler.prototype.getCurrentFontInfo = function(){
-	    return this.fontDict[this.currentFont];
-	}
-
-	DrawerCompiler.prototype.getCurrentFontSize = function(){
-	    if( this.currentFontSize === null ){
-	        throw new Error("cannot resolve current font size");
-	    }
-	    return this.currentFontSize;
-	}
-
-	DrawerCompiler.prototype.setPoint = function(name, x, y){
-	    this.pointDict[name] = {x:x, y:y};
-	};
-
-	DrawerCompiler.prototype.getPoint = function(name){
-	    return this.pointDict[name];
-	};
-
-	DrawerCompiler.prototype.setBox = function(name, box){
-	    this.boxDict[name] = box.clone();
-	};
-
-	DrawerCompiler.prototype.getBox = function(name){
-	    return this.boxDict[name];
-	};
-
-	DrawerCompiler.prototype.frameRight = function(box){
-	    this.line(box.right(), box.top(), box.right(), box.bottom());
-	};
-
-	DrawerCompiler.prototype.frameTop = function(box){
-	    this.line(box.left(), box.top(), box.right(), box.top());
-	};
-
-	DrawerCompiler.prototype.frameBottom = function(box){
-	    this.line(box.left(), box.bottom(), box.right(), box.bottom());
-	};
-
-	DrawerCompiler.prototype.frameCells = function(cells){
-	    cells.forEach(function(cols){
-	        cols.forEach(function(cell){
-	            this.box(cell);
-	        }.bind(this))
-	    }.bind(this));
-	};
-
-	DrawerCompiler.prototype.frameColumnsRight = function(cells, icol, opt){
-	    var rowSize = cells.length;
-	    var topCell = cells[0][icol];
-	    var botCell = cells[rowSize-1][icol];
-	    var top = topCell.top();
-	    var bot = botCell.bottom();
-	    var x = topCell.right();
-	    if( opt.dx ){
-	        x += opt.dx;
-	    }
-	    this.line(x, top, x, bot);
-	}
-
-	DrawerCompiler.prototype.drawEvenInnerColumnBorders = function(box, nRows){
-	    var left = box.left(), top = box.top(), bottom = box.bottom(),
-	        w = box.width() / nRows;
-	    var i, x;
-	    for(i=1;i<nRows;i++){
-	        x = left + w * i;
-	        this.line(x, top, x, bottom);
-	    }
-	};
-
-	DrawerCompiler.prototype.drawInnerColumnBorders = function(boxes){
-	    var i, n = boxes.length - 1;
-	    for(i=0;i<n;i++){
-	        this.frameRight(boxes[i]);
-	    }
-	}
-
-	DrawerCompiler.prototype.multilineText = function(texts, box, halign, valign, leading){
-	    if( !texts ){
-	        texts = [];
-	    }
-	    if( leading === undefined ){
-	        leading = 0;
-	    }
-	    var fontSize = this.getCurrentFontSize();
-	    var nLines = texts.length;
-	    var y;
-	    switch(valign){
-	        case "top": y = box.top(); break;
-	        case "center": y = box.top() + (box.height() - calcTotalHeight())/ 2; break;
-	        case "bottom": y = box.top() + box.height() - calcTotalHeight(); break;
-	        default: throw new Error("invalid valign: " + valign);
-	    }
-	    var x;
-	    switch(halign){
-	        case "left": x = box.left(); break;
-	        case "center": x = box.cx(); break;
-	        case "right": x = box.right(); break;
-	        default: throw new Error("invalid halign: " + halign);
-	    }
-	    var bound = null, render;
-	    texts.forEach(function(line){
-	        render = this.textAt(line, x, y, halign, "top");
-	        bound = Box.boundingBox(bound, render);
-	        y += fontSize + leading;
-	    }.bind(this));
-	    return bound;
-	    
-	    function calcTotalHeight(){
-	        return fontSize * nLines + leading * (nLines - 1);
-	    }
-	}
-
-	DrawerCompiler.prototype.measureText = function(text){
-	    var fontSize = this.getCurrentFontSize();
-	    var mes = measureChars(text, fontSize);
-	    return {
-	        cx: sum(mes, "width"),
-	        cy: fontSize
-	    };
-	}
-
-	DrawerCompiler.prototype.breakLines = function(text, width, fontSize){
-	    if( fontSize === undefined ) fontSize = this.getCurrentFontSize();
-	    return breakLines(text, width, fontSize);
-	}
 
 
 /***/ }

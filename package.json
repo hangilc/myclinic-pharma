@@ -28,7 +28,7 @@
     "moment": "^2.15.0",
     "myclinic-consts": "^1.0.0",
     "myclinic-drawer": "^1.0.4",
-    "myclinic-drawer-forms": "^1.0.3",
+    "myclinic-drawer-forms": "^1.0.4",
     "myclinic-drawer-svg": "^1.0.1",
     "raw-loader": "^0.5.1",
     "webpack": "^1.13.2"

@@ -2,6 +2,10 @@
 
 var service = require("./pharma-service");
 var task = require("./task");
+var PrescContent = require("myclinic-drawer-forms").PrescContent;
+var DrawerSVG = require("myclinic-drawer-svg");
+var kanjidate = require("kanjidate");
+var util = require("./util");
 
 (function(){
 	var match = location.search.match(/visit_id=(\d+)/);
@@ -19,11 +23,24 @@ function start(visitId){
 			return;
 		}
 		console.log(result);
+		var drugs = result.drugs.map(function(drug){
+			return util.drugRep(drug);
+		})
+		var data = {
+			name: result.name,
+			at: kanjidate.format(kanjidate.f2, result.at),
+			drugs: drugs,
+			clinic: result.config.presc.clinic
+		}
+		var ops = PrescContent.getOps(data);
+	    var svg = DrawerSVG.drawerToSvg(ops, {width: "148mm", height: "210mm", viewBox: "0 0 148 210"});
+	    document.getElementById("preview-area").appendChild(svg);
+
 	})
 }
 
 function fetchData(visitId, cb){
-	var visit, patient, drugs;
+	var visit, patient, drugs, config;
 	task.run([
 		function(done){
 			service.getVisit(visitId, function(err, result){
@@ -54,6 +71,16 @@ function fetchData(visitId, cb){
 				drugs = result;
 				done();
 			})
+		},
+		function(done){
+			util.request("config", {}, "GET", 3000, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				config = result;
+				done();
+			})
 		}
 	], function(err){
 		if( err ){
@@ -61,9 +88,10 @@ function fetchData(visitId, cb){
 			return;
 		}
         var data = {
-            name: patient.last_name + patient.first_name,
+            name: patient.last_name + " " + patient.first_name,
             at: visit.v_datetime,
-            drugs: drugs
+            drugs: drugs,
+            config: config
         };
 		cb(undefined, data);
 	})

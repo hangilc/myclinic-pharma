@@ -44,7 +44,7 @@ exports.getVisit = function(visitId, cb){ // get_visit
 	cb(undefined, {
 		visit_id: 1234,
 		patient_id: 2239,
-		v_datetime: "2016-0918 14:38:12",
+		v_datetime: "2016-09-18 14:38:12",
 		shahokokuho_id: 0,
 		koukikourei_id: 0,
 		roujin_id: 0,
