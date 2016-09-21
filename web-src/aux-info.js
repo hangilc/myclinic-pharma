@@ -393,7 +393,14 @@ document.querySelectorAll("#aux-info input[name=mode]").forEach(function(e){
 	});
 });
 
-document.body.addEventListener("presc-cancel", function(event){
+function doClose(){
 	ctx = initialCtx();
 	wrapper.style.display = "none";
+}
+
+document.body.addEventListener("presc-cancel", function(event){
+	doClose();
+});
+document.body.addEventListener("presc-done", function(event){
+	doClose();
 });

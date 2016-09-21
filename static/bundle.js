@@ -60,6 +60,10 @@
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
+		doRefresh();
+	});
+
+	function doRefresh(){
 		var resultList;
 		var includeAllPatientsChecked = includeAllPatients();
 		var loader = includeAllPatients() ? service.listTodaysVisits : service.listPharmaQueue;
@@ -83,7 +87,7 @@
 			var html = patientListTmpl.render({list: resultList});
 			document.querySelector(".pqueue tbody").innerHTML = html;
 		});
-	});
+	}
 
 	document.body.addEventListener("click", function(event){
 		if( event.target.classList.contains("pqueue-item") ){
@@ -143,6 +147,10 @@
 	});
 
 	document.body.addEventListener("presc-cancel", function(event){
+		document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+	});
+
+	document.body.addEventListener("presc-done", function(event){
 		document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
 	})
 
@@ -1421,7 +1429,11 @@
 			description: "DESCRIPTION",
 			sideeffect: "SIDEEFFECT"
 		})
-	}
+	};
+
+	exports.prescDone = function(visitId, done){
+		done();
+	};
 
 
 /***/ },
@@ -6564,9 +6576,16 @@
 		});
 	});
 
-	document.body.addEventListener("presc-cancel", function(event){
+	function doClose(){
 		ctx = initialCtx();
 		wrapper.style.display = "none";
+	}
+
+	document.body.addEventListener("presc-cancel", function(event){
+		doClose();
+	});
+	document.body.addEventListener("presc-done", function(event){
+		doClose();
 	});
 
 /***/ },
@@ -6804,12 +6823,37 @@
 		event.target.dispatchEvent(evt);
 	});
 
-	document.body.addEventListener("presc-cancel", function(event){
+	document.getElementById("presc-done-button").addEventListener("click", function(event){
+		task.run([
+			function(done){
+				service.prescDone(ctx.currentVisitId, done);
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			var evt = new CustomEvent("presc-done", { bubbles: true });
+			event.target.dispatchEvent(evt);
+		})
+	});
+
+	function doClose(){
 		ctx.currentVisitId = 0;
 		document.getElementById("packaging_box").style.display = "none";
 		document.getElementById("packaging-patient-wrapper").innerHTML = "";
 		document.getElementById("drug_list").innerHTML = "";
-	})
+	}
+
+	document.body.addEventListener("presc-cancel", function(event){
+		doClose();
+	});
+
+	document.body.addEventListener("presc-done", function(event){
+		doClose();
+	});
+
+
 
 
 

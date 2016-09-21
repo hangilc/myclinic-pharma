@@ -14,6 +14,10 @@ var patientListTmplSrc = require("raw!./patient-list.html");
 var patientListTmpl = hogan.compile(patientListTmplSrc);
 
 document.getElementById("refresh-button").addEventListener("click", function(event){
+	doRefresh();
+});
+
+function doRefresh(){
 	var resultList;
 	var includeAllPatientsChecked = includeAllPatients();
 	var loader = includeAllPatients() ? service.listTodaysVisits : service.listPharmaQueue;
@@ -37,7 +41,7 @@ document.getElementById("refresh-button").addEventListener("click", function(eve
 		var html = patientListTmpl.render({list: resultList});
 		document.querySelector(".pqueue tbody").innerHTML = html;
 	});
-});
+}
 
 document.body.addEventListener("click", function(event){
 	if( event.target.classList.contains("pqueue-item") ){
@@ -97,6 +101,10 @@ document.getElementById("blank-other-drugbag-button").addEventListener("click", 
 });
 
 document.body.addEventListener("presc-cancel", function(event){
+	document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+});
+
+document.body.addEventListener("presc-done", function(event){
 	document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
 })
 

@@ -237,4 +237,8 @@ exports.findPharmaDrug = function(drugId, cb){
 		description: "DESCRIPTION",
 		sideeffect: "SIDEEFFECT"
 	})
-}
+};
+
+exports.prescDone = function(visitId, done){
+	done();
+};

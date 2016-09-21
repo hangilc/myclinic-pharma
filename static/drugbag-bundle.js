@@ -456,7 +456,11 @@
 			description: "DESCRIPTION",
 			sideeffect: "SIDEEFFECT"
 		})
-	}
+	};
+
+	exports.prescDone = function(visitId, done){
+		done();
+	};
 
 
 /***/ },

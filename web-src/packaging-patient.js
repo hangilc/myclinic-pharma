@@ -128,11 +128,36 @@ document.getElementById("presc-cancel-button").addEventListener("click", functio
 	event.target.dispatchEvent(evt);
 });
 
-document.body.addEventListener("presc-cancel", function(event){
+document.getElementById("presc-done-button").addEventListener("click", function(event){
+	task.run([
+		function(done){
+			service.prescDone(ctx.currentVisitId, done);
+		}
+	], function(err){
+		if( err ){
+			alert(err);
+			return;
+		}
+		var evt = new CustomEvent("presc-done", { bubbles: true });
+		event.target.dispatchEvent(evt);
+	})
+});
+
+function doClose(){
 	ctx.currentVisitId = 0;
 	document.getElementById("packaging_box").style.display = "none";
 	document.getElementById("packaging-patient-wrapper").innerHTML = "";
 	document.getElementById("drug_list").innerHTML = "";
-})
+}
+
+document.body.addEventListener("presc-cancel", function(event){
+	doClose();
+});
+
+document.body.addEventListener("presc-done", function(event){
+	doClose();
+});
+
+
 
 
