@@ -190,6 +190,6 @@ document.getElementById("print-presc-button").addEventListener("click", function
 
 document.getElementById("print-techou-button").addEventListener("click", function(event){
 	var visitId = ctx.currentVisitId;
-	window.open("techou-preview.html?visit_id=" + visitId, "_blank", "width=400,height=544");
+	window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
 })
 

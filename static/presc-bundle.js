@@ -59,10 +59,12 @@
 			alert("cannot find visit_id");
 			return;
 		}
-		start(+match[1]);
+		var isTechou = location.search.indexOf("mode=techou") >= 0;
+		start(+match[1], isTechou);
 	})();
 
-	function start(visitId){
+	function start(visitId, isTechou){
+		document.title = isTechou ? "お薬手帳" : "処方内容"
 		fetchData(visitId, function(err, result){
 			if( err ){
 				alert(err);
@@ -78,7 +80,15 @@
 				drugs: drugs,
 				clinic: result.config.presc.clinic
 			}
-			var ops = PrescContent.getOps(data);
+			var option = {};
+			if( isTechou ){
+				option = {
+		            fontSize: 3.2,
+		            inset: 4,
+		            width: 99
+		        };
+			}
+			var ops = PrescContent.getOps(data, option);
 		    var svg = DrawerSVG.drawerToSvg(ops, {width: "148mm", height: "210mm", viewBox: "0 0 148 210"});
 		    document.getElementById("preview-area").appendChild(svg);
 
