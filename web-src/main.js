@@ -9,6 +9,7 @@ var kanjidate = require("kanjidate");
 var moment = require("moment");
 var PackagingPatient = require("./packaging-patient");
 var AuxInfo = require("./aux-info");
+require("./prev-techou");
 var util = require("./util");
 var patientListTmplSrc = require("raw!./patient-list.html");
 var patientListTmpl = hogan.compile(patientListTmplSrc);

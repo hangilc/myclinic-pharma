@@ -55,6 +55,7 @@
 	var moment = __webpack_require__(9);
 	var PackagingPatient = __webpack_require__(30);
 	var AuxInfo = __webpack_require__(14);
+	__webpack_require__(31);
 	var util = __webpack_require__(17);
 	var patientListTmplSrc = __webpack_require__(11);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
@@ -1357,7 +1358,24 @@
 				]
 			}
 		]);
-	}
+	};
+
+	exports.listVisits = function(patientId, offset, count, cb){
+		cb(undefined, [
+			{
+				visit_id: 1234,
+				v_datetime: "2016-09-21 18:09:00",
+			},
+			{
+				visit_id: 1233,
+				v_datetime: "2016-08-21 18:09:00",
+			},
+			{
+				visit_id: 1232,
+				v_datetime: "2016-07-21 18:09:00",
+			}
+		]);
+	};
 
 	exports.listIyakuhinByPatient = function(patientId, cb){
 		cb(undefined, [
@@ -6664,6 +6682,26 @@
 				cb(err, result);
 			}
 		});
+	};
+
+	exports.insertAfter = function(refNode, newNode){
+		var parent = refNode.parentNode;
+		if( parent.lastChild === refNode ){
+			parent.appendChild(newNode);
+		} else {
+			parent.insertBefore(newNode, refNode.nextSibling);
+		}
+	}
+
+	exports.nextElementSibling = function(node){
+		var nextSib = node.nextSibling;
+		while( nextSib ){
+			if( nextSib.nodeType === 1 ){
+				return nextSib;
+			}
+			nextSib = nextSib.nextSibling;
+		}
+		return null;
 	}
 
 
@@ -6857,6 +6895,173 @@
 
 
 
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var task = __webpack_require__(1);
+	var service = __webpack_require__(6);
+	var kanjidate = __webpack_require__(8);
+	var hogan = __webpack_require__(3);
+	var util = __webpack_require__(17);
+	var patientInfoTmplSrc = __webpack_require__(32);
+	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
+	var visitsTmplSrc = __webpack_require__(33);
+	var visitsTmpl = hogan.compile(visitsTmplSrc);
+	var drugsTmplSrc = __webpack_require__(34);
+	var drugsTmpl = hogan.compile(drugsTmplSrc);
+
+	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
+		var text = event.target.querySelector("input[type=text]").value;
+		if( !text.match(/^\d+$/) ){
+			alert("患者番号が適切でありません。");
+			return;
+		}
+		var patientId = +text;
+		fetchData(patientId, function(err, data){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderPatient(data.patient);
+			renderVisits(data.visits);
+		})
+	});
+
+	function renderPatient(patient){
+		var html = patientInfoTmpl.render(patient);
+		document.getElementById("previous-techou-patient").innerHTML = html;
+	}
+
+	function renderVisits(visits){
+		var list = visits.map(function(visit){
+			return {
+				visit_id: visit.visit_id,
+				label: kanjidate.format(kanjidate.f1, visit.v_datetime)
+			};
+		});
+		var html = visitsTmpl.render({list: list});
+		document.getElementById("previous-techou-visits").innerHTML = html;
+	}
+
+	function fetchData(patientId, cb){
+		var patient, visits;
+		task.run([
+			function(done){
+				service.getPatient(patientId, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					patient = result;
+					done();
+				})
+			},
+			function(done){
+				service.listVisits(patientId, 0, 10, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					visits = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				cb(err);
+				return;
+			}
+			cb(undefined, {
+				patient: patient,
+				visits: visits
+			});
+		});
+	}
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "A" && target.hasAttribute("data-visit-id") ){
+			var nextElement = util.nextElementSibling(target);
+			if( nextElement !== null && nextElement.getAttribute("data-kind") === "prev-techou-drugs" ){
+				nextElement.parentNode.removeChild(nextElement);
+				return;
+			}
+			var visitId = target.getAttribute("data-visit-id");
+			var drugs;
+			task.run([
+				function(done){
+					service.listFullDrugs(visitId, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						drugs = result;
+						done();
+					})
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				var index = 1;
+				var list = drugs.map(function(drug){
+					return {
+						label: util.drugRep(drug),
+					}
+				});
+				var html = drugsTmpl.render({list: list, visit_id: visitId});
+				var dom = document.createElement("div");
+				dom.setAttribute("data-kind", "prev-techou-drugs");
+				dom.innerHTML = html;
+				util.insertAfter(event.target, dom);
+			})
+		}
+	});
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("print-prev-techou-button") ){
+			var visitId = target.getAttribute("data-visit-id");
+			window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
+		}
+	});
+
+	function doClear(){
+		var wrapper = document.getElementById("previous-techou-wrapper");
+		wrapper.querySelector("form.search-form input[type=text]").value = "";
+		document.getElementById("previous-techou-patient").innerHTML = "";
+		document.getElementById("previous-techou-visits").innerHTML = "";
+	}
+
+	document.getElementById("previous-techou-patient").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("end-button") ){
+			doClear();
+		}
+	});
+
+/***/ },
+/* 32 */
+/***/ function(module, exports) {
+
+	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
+
+/***/ },
+/* 33 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
+
+/***/ },
+/* 34 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
 
 /***/ }
 /******/ ]);

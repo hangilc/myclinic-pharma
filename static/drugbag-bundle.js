@@ -384,7 +384,24 @@
 				]
 			}
 		]);
-	}
+	};
+
+	exports.listVisits = function(patientId, offset, count, cb){
+		cb(undefined, [
+			{
+				visit_id: 1234,
+				v_datetime: "2016-09-21 18:09:00",
+			},
+			{
+				visit_id: 1233,
+				v_datetime: "2016-08-21 18:09:00",
+			},
+			{
+				visit_id: 1232,
+				v_datetime: "2016-07-21 18:09:00",
+			}
+		]);
+	};
 
 	exports.listIyakuhinByPatient = function(patientId, cb){
 		cb(undefined, [

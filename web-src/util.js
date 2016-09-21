@@ -58,4 +58,24 @@ exports.request = function(url, data, method, timeout, cb){
 			cb(err, result);
 		}
 	});
+};
+
+exports.insertAfter = function(refNode, newNode){
+	var parent = refNode.parentNode;
+	if( parent.lastChild === refNode ){
+		parent.appendChild(newNode);
+	} else {
+		parent.insertBefore(newNode, refNode.nextSibling);
+	}
+}
+
+exports.nextElementSibling = function(node){
+	var nextSib = node.nextSibling;
+	while( nextSib ){
+		if( nextSib.nodeType === 1 ){
+			return nextSib;
+		}
+		nextSib = nextSib.nextSibling;
+	}
+	return null;
 }

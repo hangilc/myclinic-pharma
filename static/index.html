@@ -40,16 +40,15 @@
                                         </legend>
                                         <div id="printer-setting-workspace"></div>
                                     </fieldset>     
-                                    <fieldset>
+                                    <fieldset id="previous-techou-wrapper">
                                         <legend>過去のお薬手帳</legend>
-                                        <form onsubmit="return false">
+                                        <form onsubmit="return false" class="search-form">
                                             <input type="text" style="margin-right:6px" placeholder="患者番号"/>
                                             <input type="submit" value="検索" />
-                                            <div id="previous-techou-error" style="display:none"></div>
-                                            <div id="previous-techou-patient"></div>
-                                            <div id="previous-techou-visits"></div>
                                         </form>
-                                    </fieldset>
+                                        <div id="previous-techou-patient"></div>
+                                        <div id="previous-techou-visits"></div>
+                                   </fieldset>
 					            </td>
                             </tr>
                         </tbody>
