@@ -78,4 +78,5 @@ exports.nextElementSibling = function(node){
 		nextSib = nextSib.nextSibling;
 	}
 	return null;
-}
+};
+

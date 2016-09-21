@@ -7,6 +7,7 @@ var DrugBag = require("myclinic-drawer-forms").DrugBag;
 var DrawerSVG = require("myclinic-drawer-svg");
 var moment = require("moment");
 var kanjidate = require("kanjidate");
+var printUtil = require("./print-util");
 
 (function(){
 	var match;
@@ -18,7 +19,7 @@ var kanjidate = require("kanjidate");
 	}
 	match = q.match(/drug_id=(\d+)/);
 	if( match ){
-		previewDrug(+match[1]);
+		startSingleDrug(+match[1]);
 		return;
 	}
 	match = q.match(/blank=(\w+)/);
@@ -50,6 +51,7 @@ function previewAllDrugs(visitId){
 		navPageUpdate(ctx);
 		document.getElementById("page-nav-wrapper").style.display = "block";
 		updatePreviewDrug(ctx);
+		bindPrintButtonAllDrugs(ctx);
 	});
 }
 
@@ -128,7 +130,31 @@ function fetchDrugs(visitId, cb){
 	})
 }
 
-function previewDrug(drugId){
+function bindPrintButtonAllDrugs(ctx){
+	document.getElementBydId("print-button").addEventListener("click", function(event){
+		alert("not implemented yet");
+	})
+}
+
+function bindPrintButtonSingle(ops){
+	document.getElementById("print-button").addEventListener("click", function(event){
+		printUtil.print([ops], undefined, function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+		});
+	})
+}
+
+function startSingleDrug(drugId){
+	composeDrugBagOps(drugId, function(err, ops){
+		renderDrugBag(ops);
+		bindPrintButtonSingle(ops);
+	})
+}
+
+function composeDrugBagOps(drugId, cb){
 	DrugBagData.composeData(drugId, function(err, result){
 		if( err ){
 			alert(err);
@@ -136,9 +162,24 @@ function previewDrug(drugId){
 		}
 		var compiler = new DrugBag(result);
 		var ops = compiler.getOps();
-		var svg = DrawerSVG.drawerToSvg(ops, {width: "128mm", height: "182mm", viewBox: "0 0 192 273"});
-		var wrapper = document.getElementById("preview-area");
-		wrapper.appendChild(svg);
+		cb(undefined, ops);
+	})
+}
+
+function renderDrugBag(ops){
+	var svg = DrawerSVG.drawerToSvg(ops, {width: "128mm", height: "182mm", viewBox: "0 0 192 273"});
+	var wrapper = document.getElementById("preview-area");
+	wrapper.innerHTML = "";
+	wrapper.appendChild(svg);
+}
+
+function previewDrug(drugId){
+	composeDrugBagOps(drugId, function(err, ops){
+		if( err ){
+			alert(err);
+			return;
+		}
+		renderDrugBag(ops);
 	})
 }
 
