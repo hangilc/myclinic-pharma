@@ -73,7 +73,7 @@ function fetchData(visitId, cb){
 			})
 		},
 		function(done){
-			service.listDrugs(visitId, function(err, result){
+			service.listFullDrugs(visitId, function(err, result){
 				if( err ){
 					done(err);
 					return;

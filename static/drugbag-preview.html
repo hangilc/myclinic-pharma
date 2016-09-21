@@ -3,11 +3,24 @@
 <head>
 	<meta charset="UTF-8">
 	<title>薬袋プレビュー</title>
+	<style>
+		a {text-decoration: none;}
+	</style>
 </head>
 <body>
 	<div>
 		<button id="print-button">印刷</button>
         <span id="printer-setting-disp"></span>
+        <div id="page-nav-wrapper" style="display:none">
+			<input id="nonprescribed-only" type=checkbox checked />未処方分のみ
+			<span id="page-nav">
+				<a href="javascript:void(0)" id="page-prev">&lt;</a>
+				<span id="page-info">
+					<span id="page-info-current"></span> / <span id="page-info-total"></span>
+				</span>
+				<a href="javascript:void(0)" id="page-next">&gt;</a>
+			</span>
+		</div>
 	</div>
 	<div id="preview-area"  style="width:300px;height:500px;overflow:hidden"></div>
 	<script src="drugbag-bundle.js"></script>

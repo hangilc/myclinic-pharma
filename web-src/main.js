@@ -100,7 +100,7 @@ function setupPackagingInfo(visitId){
 			})
 		},
 		function(done){
-			service.listDrugs(visitId, function(err, result){
+			service.listFullDrugs(visitId, function(err, result){
 				if( err ){
 					done(err);
 					return;
@@ -186,6 +186,11 @@ document.getElementById("blank-other-drugbag-button").addEventListener("click", 
 document.getElementById("print-presc-button").addEventListener("click", function(event){
 	var visitId = ctx.currentVisitId;
 	window.open("presc-preview.html?visit_id=" + visitId, "_blank", "width=600,height=400");
+});
+
+document.getElementById("print-all-drugbags-button").addEventListener("click", function(event){
+	var visitId = ctx.currentVisitId;
+	window.open("drugbag-preview.html?visit_id=" + visitId, "_blank", "width=350,height=544");
 });
 
 document.getElementById("print-techou-button").addEventListener("click", function(event){

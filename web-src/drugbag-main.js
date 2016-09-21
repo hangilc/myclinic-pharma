@@ -9,8 +9,14 @@ var moment = require("moment");
 var kanjidate = require("kanjidate");
 
 (function(){
+	var match;
 	var q = location.search;
-	var match = q.match(/drug_id=(\d+)/);
+	match = q.match(/visit_id=(\d+)/);
+	if( match ){
+		previewAllDrugs(+match[1]);
+		return;
+	}
+	match = q.match(/drug_id=(\d+)/);
 	if( match ){
 		previewDrug(+match[1]);
 		return;
@@ -20,6 +26,107 @@ var kanjidate = require("kanjidate");
 		previewBlank(match[1]);
 	}
 })();
+
+function previewAllDrugs(visitId){
+	fetchDrugs(visitId, function(err, result){
+		if( err ){
+			alert(err);
+			return;
+		}
+		var drugs;
+		if( document.getElementById("nonprescribed-only").checked ){
+			drugs = result.filter(function(drug){
+				return !drug.d_prescribed;
+			})
+		} else {
+			drugs = result;
+		}
+		var ctx = {
+			allDrugs: result,
+			drugs: drugs,
+			currentPage: drugs.length > 0 ? 1 : 0
+		};
+		bindPageNav(ctx);
+		navPageUpdate(ctx);
+		document.getElementById("page-nav-wrapper").style.display = "block";
+		updatePreviewDrug(ctx);
+	});
+}
+
+function navPageUpdate(ctx){
+	document.getElementById("page-info-current").innerHTML = ctx.currentPage;
+	document.getElementById("page-info-total").innerHTML = ctx.drugs.length;
+}
+
+function clearPreview(){
+	document.getElementById("preview-area").innerHTML = "";
+}
+
+function bindPageNav(ctx){
+	document.getElementById("nonprescribed-only").addEventListener("change", function(event){
+		var checked = this.checked;
+		if( checked ){
+			ctx.drugs = ctx.allDrugs.filter(function(drug){
+				return !drug.d_prescribed;
+			})
+		} else {
+			ctx.drugs = ctx.allDrugs;
+		}
+		if( ctx.drugs.length > 0 ){
+			ctx.currentPage = 1;
+		} else {
+			ctx.currentPage = 0;
+		}
+		navPageUpdate(ctx);
+		updatePreviewDrug(ctx);
+	});
+	document.getElementById("page-prev").addEventListener("click", function(event){
+		event.preventDefault();
+		if( ctx.currentPage > 1 ){
+			ctx.currentPage -= 1;
+			navPageUpdate(ctx);
+			updatePreviewDrug(ctx);
+		}
+	});
+	document.getElementById("page-next").addEventListener("click", function(event){
+		event.preventDefault();
+		if( ctx.currentPage < ctx.drugs.length ){
+			ctx.currentPage += 1;
+			navPageUpdate(ctx);
+			updatePreviewDrug(ctx);
+		}
+	});
+}
+
+function updatePreviewDrug(ctx){
+	if( ctx.currentPage > 0 ){
+		previewDrug(ctx.drugs[ctx.currentPage-1].drug_id);
+	} else {
+		clearPreview();
+	}
+}
+
+function fetchDrugs(visitId, cb){
+	var resultList;
+	task.run([
+		function(done){
+			service.listDrugs(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				resultList = result;
+				done();
+			})
+		}
+	], function(err){
+		if( err ){
+			cb(err);
+			return;
+		}
+		cb(undefined, resultList);
+	})
+}
 
 function previewDrug(drugId){
 	DrugBagData.composeData(drugId, function(err, result){

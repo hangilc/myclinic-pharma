@@ -146,7 +146,7 @@
 				})
 			},
 			function(done){
-				service.listDrugs(visitId, function(err, result){
+				service.listFullDrugs(visitId, function(err, result){
 					if( err ){
 						done(err);
 						return;
@@ -232,6 +232,11 @@
 	document.getElementById("print-presc-button").addEventListener("click", function(event){
 		var visitId = ctx.currentVisitId;
 		window.open("presc-preview.html?visit_id=" + visitId, "_blank", "width=600,height=400");
+	});
+
+	document.getElementById("print-all-drugbags-button").addEventListener("click", function(event){
+		var visitId = ctx.currentVisitId;
+		window.open("drugbag-preview.html?visit_id=" + visitId, "_blank", "width=350,height=544");
 	});
 
 	document.getElementById("print-techou-button").addEventListener("click", function(event){
@@ -1345,7 +1350,7 @@
 		});
 	}
 
-	exports.listDrugs = function(visitId, cb){ // list_full_drugs
+	exports.listFullDrugs = function(visitId, cb){ // list_full_drugs
 		cb(undefined, [
 			{
 				drug_id: 1123,
@@ -1361,6 +1366,51 @@
 			}
 		]);
 	};
+
+	exports.listDrugs = function(visitId, cb){
+		cb(undefined, [
+			{
+				drug_id: 2222,
+				visit_id: 3333,
+				d_iyakuhincode: 1234,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "5",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2223,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "6",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2224,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "7",
+				d_prescribed: 0
+			},
+			{
+				drug_id: 2225,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "8",
+				d_prescribed: 0
+			},
+		])
+	}
 
 	exports.calcVisits = function(patientId, cb){
 		cb(undefined, 26);
