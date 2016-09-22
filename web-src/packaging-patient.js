@@ -18,6 +18,7 @@ var ctx = {
 };
 
 exports.open = function(visitId){
+	ctx.currentVisitId = visitId;
 	fetchData(visitId, function(err, data){
 		if( err ){
 			alert(err);

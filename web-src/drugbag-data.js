@@ -1,11 +1,26 @@
 "use strict";
 
-var service = require("./pharma-service");
-var task = require("./task");
+// var service = require("./pharma-service");
+// var task = require("./task");
 var mConsts = require("myclinic-consts");
 var DrugBag = require("myclinic-drawer-forms").DrugBag;
 var DrawerCompiler = require("myclinic-drawer").Compiler;
+var kanjidate = require("kanjidate");
 
+exports.createData = function(drug, visit, patient, pharmaDrug){
+	return {
+		kind: drugCategoryToSlug(drug.d_category),
+		instructions: composeInstructions(drug.d_category, 
+            drug.d_usage, drug.d_amount, drug.unit, drug.d_days, drug.d_iyakuhincode),
+		drug_name: composeDrugName(drug.name, drug.d_iyakuhincode),
+		patient_name: patient.last_name + " " + patient.first_name,
+		patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
+		desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : "",
+		prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime)
+	};
+}
+
+/*
 exports.composeData = function(drugId, cb){
 	var drug, visit, patient, pharmaDrug;
 	task.run([
@@ -61,11 +76,13 @@ exports.composeData = function(drugId, cb){
 			drug_name: composeDrugName(drug.name, drug.d_iyakuhincode),
 			patient_name: patient.last_name + " " + patient.first_name,
 			patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
-			desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : ""
+			desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : "",
+			prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime)
 		}
 		cb(undefined, data);
 	})
 }
+*/
 
 function drugCategoryToSlug(category){
     switch(category){
