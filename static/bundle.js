@@ -1287,10 +1287,252 @@
 
 /***/ },
 /* 6 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
+	var service = __webpack_require__(27);
+
+	exports.listPharmaQueue = function(cb){ // list_full_pharma_queue
+		service.listFullPharmaQueue(cb);
+	};
+
+	exports.listTodaysVisits = function(cb){ // list_todays_visits_for_pharma
+		cb(undefined, [
+			{
+				visit_id: 1233,
+				pharma_state: 2,
+				last_name: "LAST_NAME_2",
+				first_name: "FIRST_NAME_2",
+				last_name_yomi: "LAST_NAME_YOMI_2",
+				first_name_yomi: "FIRST_NAME_YOMI_2",
+				wait_state: null,
+				patient_id: 2238
+			}
+		]);
+	};
+
+	exports.getVisit = function(visitId, cb){ // get_visit
+		cb(undefined, {
+			visit_id: 1234,
+			patient_id: 2239,
+			v_datetime: "2016-09-18 14:38:12",
+			shahokokuho_id: 0,
+			koukikourei_id: 0,
+			roujin_id: 0,
+			kouhi_1_id: 0,
+			kouhi_2_id: 0,
+			kouhi_3_id: 0
+		})
+	}
+
+	exports.getPatient = function(patientId, cb){ // get_patient
+		cb(undefined, {
+			patient_id: patientId,
+			last_name: "LAST_NAME_2",
+			first_name: "FIRST_NAME_2",
+			last_name_yomi: "LAST_NAME_YOMI_2",
+			first_name_yomi: "FIRST_NAME_YOMI_2",
+			birth_day: "1960-01-12",
+			sex: "M",
+			phone: "03-1234-56768",
+			address: "PATIENT_ADDRESS"
+		});
+	}
+
+	exports.listFullDrugs = function(visitId, cb){ // list_full_drugs
+		cb(undefined, [
+			{
+				drug_id: 1123,
+				visit_id: 1234,
+				d_iyakuhincode: 1111,
+				name: "DRUG_NAME_1",
+				d_category: 0,
+				d_amount: "3",
+				unit: "錠",
+				d_usage: "分３　毎食後",
+				d_days: "7",
+				d_prescribed: 1
+			}
+		]);
+	};
+
+	exports.listDrugs = function(visitId, cb){
+		cb(undefined, [
+			{
+				drug_id: 2222,
+				visit_id: 3333,
+				d_iyakuhincode: 1234,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "5",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2223,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "6",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2224,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "7",
+				d_prescribed: 0
+			},
+			{
+				drug_id: 2225,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "8",
+				d_prescribed: 0
+			},
+		])
+	}
+
+	exports.calcVisits = function(patientId, cb){
+		cb(undefined, 26);
+	};
+
+	exports.listFullVisits = function(patientId, offset, count, cb){
+		cb(undefined, [
+			{
+				v_datetime: "2016-09-18 18:05:12",
+				texts: [
+					{
+						content: "LINE_1\r\nLINE_2\r\nOFFSET " + offset + "\r\nCOUNT " + count
+					}
+				],
+				drugs: [
+					{
+						name: "DRUG_NAME_1",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					},
+					{
+						name: "DRUG_NAME_2",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					}
+				]
+			}
+		]);
+	};
+
+	exports.listVisits = function(patientId, offset, count, cb){
+		cb(undefined, [
+			{
+				visit_id: 1234,
+				v_datetime: "2016-09-21 18:09:00",
+			},
+			{
+				visit_id: 1233,
+				v_datetime: "2016-08-21 18:09:00",
+			},
+			{
+				visit_id: 1232,
+				v_datetime: "2016-07-21 18:09:00",
+			}
+		]);
+	};
+
+	exports.listIyakuhinByPatient = function(patientId, cb){
+		cb(undefined, [
+			{
+				iyakuhincode: 1234,
+				name: "DRUG_NAME_2",
+				yomi: "DRUG_YOMI_2"
+			},
+			{
+				iyakuhincode: 1235,
+				name: "DRUG_NAME_3",
+				yomi: "DRUG_YOMI_3"
+			}
+		]);
+	};
+
+	exports.countVisitsByIyakuhincode = function(patientId, iyakuhincode, cb){
+		cb(undefined, 16);
+	};
+
+	exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
+		cb(undefined, [
+			{
+				v_datetime: "2016-08-18 09:05:12",
+				texts: [
+					{
+						content: "LINE_1\r\nLINE_2\r\nOFFSET " + offset + "\r\nCOUNT " + count
+					}
+				],
+				drugs: [
+					{
+						name: "DRUG_NAME_3",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					},
+					{
+						name: "DRUG_NAME_4",
+						d_category: 0,
+						d_amount: "3",
+						unit: "錠",
+						d_usage: "分３　毎食後",
+						d_days: "7",
+						d_prescribed: 1
+					}
+				]
+			}
+		]);
+	};
+
+	exports.getFullDrug = function(drugId, cb){
+		cb(undefined, {
+			name: "DRUG_NAME_5",
+			d_iyakuhincode: 337834,
+			d_category: 0,
+			d_amount: "3",
+			unit: "錠",
+			d_usage: "分３　毎食後",
+			d_days: "7",
+			d_prescribed: 0
+		});	
+	}
+
+	exports.findPharmaDrug = function(drugId, cb){
+		cb(undefined, {
+			description: "DESCRIPTION",
+			sideeffect: "SIDEEFFECT"
+		})
+	};
+
+	exports.prescDone = function(visitId, done){
+		done();
+	};
+
+	/*
 	exports.listPharmaQueue = function(cb){ // list_full_pharma_queue
 		cb(undefined, [
 			{
@@ -1550,7 +1792,7 @@
 	exports.prescDone = function(visitId, done){
 		done();
 	};
-
+	*/
 
 /***/ },
 /* 7 */
@@ -7223,6 +7465,431 @@
 /***/ function(module, exports) {
 
 	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var conti = __webpack_require__(2);
+
+	var timeout = 15000;
+
+	function request(service, data, method, cb){
+		data = data || {};
+		method = method || "GET";
+		//var url = new URL(window.location.origin + "/service");
+		var url = window.location.origin + "/service";
+		var searchParams = new URLSearchParams();
+		searchParams.append("_q", service);
+		//url.searchParams.append("_q", service);
+		var opt = {
+			method: method,
+			headers: {}
+		};
+		if( method === "GET" ){
+			Object.keys(data).forEach(function(key){
+				searchParams.append(key, data[key]);
+			});
+		}
+		if( method === "POST" ){
+			if( typeof data === "string" ){
+				opt.body = data;
+			} else {
+				opt.body = JSON.stringify(data);
+			}
+			opt.headers["content-type"] = "application/json";
+		}
+		var done = false;
+		var timer = setTimeout(function(){
+			timer = null;
+			if( !done ){
+				done = true;
+				cb("TIMEOUT");
+			}
+		}, timeout);
+		url += "?" + searchParams.toString();
+		conti.fetchJson(url, opt, function(err, result){
+			if( timer ){
+				clearTimeout()
+			}
+			if( !done ){
+				done = true;
+				cb(err, result);
+			}
+		});
+	}
+
+	// function request(service, data, method, cb){
+	// 	data = data || {};
+	// 	method = method || "GET";
+	// 	var config = {
+	// 		url: "./service?_q=" + service,
+	//         type: method,
+	// 		data: data,
+	// 		dataType: "json",
+	// 		success: function(list){
+	// 			cb(undefined, list);
+	// 		},
+	// 		error: function(xhr, err, errThrown){
+	// 			cb("ERROR: " + (xhr.responseText || err || errThrown));
+	// 		},
+	// 		timeout: 10000
+	// 	};
+	// 	if( method === "POST" && typeof data === "string" ){
+	// 		config.contentType = "application/json";
+	// 	}
+	// 	$.ajax(config);
+	// }
+
+	exports.recentVisits = function(cb){
+		request("recent_visits", "", "GET", cb);
+	};
+
+	exports.getPatient = function(patientId, cb){
+		request("get_patient", {patient_id: patientId}, "GET", cb);
+	};
+
+	exports.calcVisits = function(patientId, cb){
+		request("calc_visits", {patient_id: patientId}, "GET", cb);
+	};
+
+	exports.listFullVisits = function(patientId, offset, n, cb){
+		request("list_full_visits", {patient_id: patientId, offset: offset, n: n}, "GET", cb);
+	};
+
+	exports.startExam = function(visitId, done){
+		request("start_exam", {visit_id: visitId}, "POST", done);
+	};
+
+	exports.suspendExam = function(visitId, done){
+		request("suspend_exam", {visit_id: visitId}, "POST", done);
+	};
+
+	exports.endExam = function(visitId, charge, done){
+		request("end_exam", {visit_id: visitId, charge: charge}, "POST", done);
+	};
+
+	exports.listCurrentFullDiseases = function(patientId, cb){
+		request("list_current_full_diseases", {patient_id: patientId}, "GET", cb);
+	};
+
+	exports.listFullWqueueForExam = function(cb){
+		request("list_full_wqueue_for_exam", {}, "GET", cb);
+	};
+
+	exports.getVisit = function(visitId, cb){
+		request("get_visit", {visit_id: +visitId}, "GET", cb);
+	};
+
+	exports.searchPatient = function(text, cb){
+		request("search_patient", {text: text}, "GET", cb);
+	};
+
+	exports.listTodaysVisits = function(cb){
+		request("list_todays_visits", {}, "GET", cb);
+	};
+
+	exports.startVisit = function(patientId, at, done){
+		request("start_visit", {patient_id: patientId, at: at}, "POST", done);
+	};
+
+	exports.deleteVisit = function(visitId, done){
+		request("delete_visit", {visit_id: visitId}, "POST", done);
+	};
+
+	exports.getText = function(textId, cb){
+		request("get_text", {text_id: textId}, "GET", cb);
+	};
+
+	exports.updateText = function(text, done){
+		request("update_text", text, "POST", done);
+	};
+
+	exports.deleteText = function(textId, done){
+		request("delete_text", {text_id: textId}, "POST", done);
+	};
+
+	exports.enterText = function(text, cb){
+		request("enter_text", text, "POST", cb);
+	};
+
+	exports.listAvailableHoken = function(patientId, at, cb){
+		request("list_available_hoken", {patient_id: patientId, at: at}, "GET", cb);
+	};
+
+	exports.updateVisit = function(visit, done){
+		request("update_visit", visit, "POST", done);
+	};
+
+	exports.getVisitWithFullHoken = function(visitId, cb){
+		request("get_visit_with_full_hoken", {visit_id: visitId}, "GET", cb);
+	};
+
+	exports.searchIyakuhinMaster = function(text, at, cb){
+		request("search_iyakuhin_master", {text: text, at: at}, "GET", cb);
+	};
+
+	exports.searchPrescExample = function(text, cb){
+		request("search_presc_example", {text: text}, "GET", cb);
+	};
+
+	exports.searchFullDrugForPatient = function(patientId, text, cb){
+		request("search_full_drug_for_patient", {patient_id: patientId, text: text}, "GET", cb);
+	};
+
+	exports.resolveIyakuhinMasterAt = function(iyakuhincode, at, cb){
+		request("resolve_iyakuhin_master_at", {iyakuhincode: iyakuhincode, at: at}, "GET", cb);
+	};
+
+	exports.getIyakuhinMaster = function(iyakuhincode, at, cb){
+		request("get_iyakuhin_master", {iyakuhincode: iyakuhincode, at: at}, "GET", cb);
+	};
+
+	exports.enterDrug = function(drug, cb){
+		request("enter_drug", drug, "POST", cb);
+	};
+
+	exports.getFullDrug = function(drugId, at, cb){
+		request("get_full_drug", {drug_id: drugId, at: at}, "GET", cb);
+	};
+
+	exports.listFullDrugsForVisit = function(visitId, at, cb){
+		request("list_full_drugs_for_visit", {visit_id: visitId, at: at}, "GET", cb);
+	};
+
+	exports.batchEnterDrugs = function(drugs, cb){
+		request("batch_enter_drugs", JSON.stringify(drugs), "POST", cb);
+	};
+
+	exports.batchDeleteDrugs = function(drugIds, done){
+		request("batch_delete_drugs", JSON.stringify(drugIds), "POST", done);
+	};
+
+	exports.batchUpdateDrugsDays = function(drugIds, days, done){
+		var data = {
+			drug_ids: drugIds,
+			days: days
+		};
+		request("batch_update_drugs_days", JSON.stringify(data), "POST", done);
+	};
+
+	exports.modifyDrug = function(drug, done){
+		request("modify_drug", JSON.stringify(drug), "POST", done);
+	};
+
+	exports.batchResolveShinryouNamesAt = function(names, at, cb){
+		var body = JSON.stringify({
+			names: names,
+			at: at
+		});
+		request("batch_resolve_shinryou_names_at", body, "POST", cb);
+	};
+
+	exports.batchEnterShinryou = function(shinryouList, cb){
+		var body = JSON.stringify(shinryouList);
+		request("batch_enter_shinryou", body, "POST", cb);
+	};
+
+	exports.getShinryou = function(shinryouId, cb){
+		request("get_shinryou", {shinryou_id: shinryouId}, "GET", cb);
+	};
+
+	exports.getFullShinryou = function(shinryouId, at, cb){
+		request("get_full_shinryou", {shinryou_id: shinryouId, at: at}, "GET", cb);
+	};
+
+	exports.listFullShinryouForVisit = function(visitId, at, cb){
+		request("list_full_shinryou_for_visit", {visit_id: visitId, at: at}, "GET", cb);
+	};
+
+	exports.batchDeleteShinryou = function(shinryouIds, done){
+		request("batch_delete_shinryou", JSON.stringify(shinryouIds), "POST", done);
+	};
+
+	exports.searchShinryouMaster = function(text, at, cb){
+		request("search_shinryou_master", {text: text, at: at}, "GET", cb);
+	};
+
+	exports.resolveShinryouMasterAt = function(shinryoucode, at, cb){
+		request("resolve_shinryou_master_at", {shinryoucode: shinryoucode, at: at}, "GET", cb);
+	};
+
+	exports.getShinryouMaster = function(shinryoucode, at, cb){
+		request("get_shinryou_master", {shinryoucode: shinryoucode, at: at}, "GET", cb);
+	};
+
+	exports.enterConduct = function(conduct, cb){
+		request("enter_conduct", JSON.stringify(conduct), "POST", cb);
+	};
+
+	exports.enterGazouLabel = function(gazouLabel, done){
+		request("enter_gazou_label", JSON.stringify(gazouLabel), "POST", done);
+	};
+
+	exports.enterConductDrug = function(conductDrug, cb){
+		request("enter_conduct_drug", JSON.stringify(conductDrug), "POST", cb);
+	};
+
+	exports.enterConductKizai = function(conductKizai, cb){
+		request("enter_conduct_kizai", JSON.stringify(conductKizai), "POST", cb);
+	};
+
+	exports.resolveKizaiNameAt = function(name, at, cb){
+		var data = {
+			name: name,
+			at: at
+		};
+		request("resolve_kizai_name_at", data, "GET", cb);
+	};
+
+	exports.batchEnterConductShinryou = function(conductShinryouList, cb){
+		request("batch_enter_conduct_shinryou", JSON.stringify(conductShinryouList), "POST", cb);
+	};
+
+	exports.getFullConduct = function(conductId, at, cb){
+		request("get_full_conduct", {conduct_id: conductId, at: at}, "GET", cb);
+	};
+
+	exports.enterConductShinryou = function(conductShinryou, cb){
+		request("enter_conduct_shinryou", JSON.stringify(conductShinryou), "POST", cb);
+	};
+
+	exports.enterConductDrug = function(conductDrug, cb){
+		request("enter_conduct_drug", JSON.stringify(conductDrug), "POST", cb);
+	};
+
+	exports.copyConducts = function(srcVisitId, dstVisitId, cb){
+		request("copy_conducts", {src_visit_id: srcVisitId, dst_visit_id: dstVisitId}, "POST", cb);
+	};
+
+	exports.deleteConduct = function(conductId, done){
+		request("delete_conduct", {conduct_id: conductId}, "POST", done);
+	};
+
+	exports.deleteConductShinryou = function(conductShinryouId, done){
+		request("delete_conduct_shinryou", {conduct_shinryou_id: conductShinryouId}, "POST", done);
+	}
+
+	exports.deleteConductDrug = function(conductDrugId, done){
+		request("delete_conduct_drug", {conduct_drug_id: conductDrugId}, "POST", done);
+	}
+
+	exports.deleteConductKizai = function(conductKizaiId, done){
+		request("delete_conduct_kizai", {conduct_kizai_id: conductKizaiId}, "POST", done);
+	}
+
+	exports.getKizaiMaster = function(kizaicode, at, cb){
+		request("get_kizai_master", {kizaicode: kizaicode, at: at}, "GET", cb);
+	};
+
+	exports.searchKizaiMaster = function(text, at, cb){
+		request("search_kizai_master", {text: text, at: at}, "GET", cb);
+	};
+
+	exports.changeConductKind = function(conductId, kind, done){
+		request("change_conduct_kind", {conduct_id: conductId, kind: kind}, "POST", done);
+	};
+
+	exports.setGazouLabel = function(conductId, label, done){
+		request("set_gazou_label", {conduct_id: conductId, label: label}, "POST", done);
+	};
+
+	exports.enterShinryouByNames = function(visitId, names, cb){
+		var data = {
+			visit_id: visitId,
+			names: names
+		};
+		request("enter_shinryou_by_names", JSON.stringify(data), "POST", cb);
+	};
+
+	exports.calcMeisai = function(visitId, cb){
+		request("calc_meisai", {visit_id: visitId}, "GET", cb);
+	};
+
+	exports.findCharge = function(visitId, cb){
+		request("find_charge", {visit_id: visitId}, "GET", cb);
+	};
+
+	exports.updateCharge = function(charge, done){
+		request("update_charge", JSON.stringify(charge), "POST", done);
+	};
+
+	exports.getCharge = function(visitId, cb){
+		request("get_charge", {visit_id: visitId}, "GET", cb);
+	};
+
+	exports.searchShoubyoumeiMaster = function(text, at, cb){
+		request("search_shoubyoumei_master", {text: text, at: at}, "GET", cb);
+	};
+
+	exports.searchShuushokugoMaster = function(text, cb){
+		request("search_shuushokugo_master", {text: text}, "GET", cb);
+	};
+
+	exports.getShoubyoumeiMaster = function(shoubyoumeicode, at, cb){
+		request("get_shoubyoumei_master", {shoubyoumeicode: shoubyoumeicode, at: at}, "GET", cb);
+	};
+
+	exports.getShuushokugoMaster = function(shuushokugocode, cb){
+		request("get_shuushokugo_master", {shuushokugocode: shuushokugocode}, "GET", cb);
+	};
+
+	exports.getShoubyoumeiMasterByName = function(name, at, cb){
+		request("get_shoubyoumei_master_by_name", {name: name, at: at}, "GET", cb);
+	};
+
+	exports.getShuushokugoMasterByName = function(name, cb){
+		request("get_shuushokugo_master_by_name", {name: name}, "GET", cb);
+	};
+
+	exports.enterDisease = function(shoubyoumeicode, patientId, startDate, shuushokugocodes, cb){
+		var data = {
+			shoubyoumeicode: shoubyoumeicode,
+			patient_id: patientId,
+			start_date: startDate,
+			shuushokugocodes: shuushokugocodes
+		};
+		request("enter_disease", JSON.stringify(data), "POST", cb);
+	};
+
+	exports.getFullDisease = function(diseaseId, cb){
+		request("get_full_disease", {disease_id: diseaseId}, "GET", cb);
+	};
+
+	exports.getDisease = function(diseaseId, cb){
+		request("get_disease", {disease_id: diseaseId}, "GET", cb);
+	};
+
+	exports.batchUpdateDiseases = function(diseases, done){
+		request("batch_update_diseases", JSON.stringify(diseases), "POST", done);
+	};
+
+	exports.listAllFullDiseases = function(patientId, cb){
+		request("list_all_full_diseases", {patient_id: patientId}, "GET", cb);
+	};
+
+	exports.updateDiseaseWithAdj = function(disease, done){
+		request("update_disease_with_adj", JSON.stringify(disease), "POST", done);
+	};
+
+	exports.deleteDiseaseWithAdj = function(diseaseId, done){
+		request("delete_disease_with_adj", {disease_id: diseaseId}, "POST", done);
+	};
+
+	exports.searchTextForPatient = function(patientId, text, cb){
+		request("search_text_for_patient", {patient_id: patientId, text: text}, "GET", cb);
+	};
+
+	exports.searchWholeText = function(text, cb){
+		request("search_whole_text", {text: text}, "GET", cb);
+	};
+
+
+
+
+
 
 /***/ }
 /******/ ]);

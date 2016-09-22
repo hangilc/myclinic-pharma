@@ -8,12 +8,6 @@
 exports.staticDir = __dirname + "/static";
 
 exports.initApp = function(app, config){
-	// app.get("/", function(req, res){
-	// 	var html = indexTmpl.render({
-	// 		baseUrl: req.baseUrl
-	// 	});
-	// 	res.send(html);
-	// });
 	app.get("/config", function(req, res){
 		res.json(config);
 	})

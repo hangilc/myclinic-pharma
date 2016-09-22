@@ -4,6 +4,17 @@ var pharma = require("./index");
 var config = require("./sample-config/pharma-config");
 
 var app = express();
+
+(function(){
+	var subApp = express();
+	var service = require("myclinic-service");
+	var serviceConfig = require("./test-config/service-config");
+	subApp.use(bodyParser.urlencoded({extended: false}));
+	subApp.use(bodyParser.json());
+	service.initApp(subApp, serviceConfig);
+	app.use("/service", subApp);
+})();
+
 var subApp = express();
 subApp.use(bodyParser.urlencoded({extended: false}));
 subApp.use(bodyParser.json());

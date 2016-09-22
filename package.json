@@ -24,16 +24,17 @@
     "body-parser": "^1.15.2",
     "conti": "^1.3.2",
     "express": "^4.14.0",
+    "hogan": "^1.0.2",
     "kanjidate": "^1.1.0",
     "moment": "^2.15.0",
     "myclinic-consts": "^1.0.0",
     "myclinic-drawer": "^1.0.4",
     "myclinic-drawer-forms": "^1.0.4",
     "myclinic-drawer-svg": "^1.0.1",
+    "myclinic-service": "^1.0.0",
+    "myclinic-service-api": "^1.0.1",
     "raw-loader": "^0.5.1",
     "webpack": "^1.13.2"
   },
-  "dependencies": {
-    "hogan": "^1.0.2"
-  }
+  "dependencies": {}
 }
