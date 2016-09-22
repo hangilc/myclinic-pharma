@@ -143,6 +143,7 @@ function bindPrintButtonSingle(ops){
 				alert(err);
 				return;
 			}
+			window.close();
 		});
 	})
 }

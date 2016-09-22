@@ -6,6 +6,7 @@ var PrescContent = require("myclinic-drawer-forms").PrescContent;
 var DrawerSVG = require("myclinic-drawer-svg");
 var kanjidate = require("kanjidate");
 var util = require("./util");
+var printUtil = require("./print-util");
 
 (function(){
 	var match = location.search.match(/visit_id=(\d+)/);
@@ -45,7 +46,7 @@ function start(visitId, isTechou){
 		var ops = PrescContent.getOps(data, option);
 	    var svg = DrawerSVG.drawerToSvg(ops, {width: "148mm", height: "210mm", viewBox: "0 0 148 210"});
 	    document.getElementById("preview-area").appendChild(svg);
-
+	    bindPrintButton(ops);
 	})
 }
 
@@ -107,30 +108,14 @@ function fetchData(visitId, cb){
 	})
 }
 
-/*
-        var visit_id = url.query.visit_id;
-        var store = {};
-        if( !(visit_id > 0) ){
-            return Promise.reject("invalid parameter");
-        }
-        return db.getVisit(conn, visit_id)
-        .then(function(visit){
-            store.visit = visit;
-            return db.getPatient(conn, visit.patient_id);
-        })
-        .then(function(patient){
-            store.patient = patient;
-            return db.listFullDrugs(conn, visit_id);
-        })
-        .then(function(drugs){
-            store.drugs = drugs;
-        })
-        .then(function(){
-            var data = {
-                name: store.patient.last_name + store.patient.first_name,
-                at: store.visit.v_datetime,
-                drugs: store.drugs
-            };
-            return PrescContent.getOps(data);
-        })
-*/
+function bindPrintButton(ops){
+	document.getElementById("print-button").addEventListener("click", function(event){
+		printUtil.print([ops], undefined, function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			window.close();
+		})
+	})
+}

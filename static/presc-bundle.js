@@ -52,6 +52,7 @@
 	var DrawerSVG = __webpack_require__(13);
 	var kanjidate = __webpack_require__(14);
 	var util = __webpack_require__(15);
+	var printUtil = __webpack_require__(17);
 
 	(function(){
 		var match = location.search.match(/visit_id=(\d+)/);
@@ -91,7 +92,7 @@
 			var ops = PrescContent.getOps(data, option);
 		    var svg = DrawerSVG.drawerToSvg(ops, {width: "148mm", height: "210mm", viewBox: "0 0 148 210"});
 		    document.getElementById("preview-area").appendChild(svg);
-
+		    bindPrintButton(ops);
 		})
 	}
 
@@ -119,7 +120,7 @@
 				})
 			},
 			function(done){
-				service.listDrugs(visitId, function(err, result){
+				service.listFullDrugs(visitId, function(err, result){
 					if( err ){
 						done(err);
 						return;
@@ -153,33 +154,17 @@
 		})
 	}
 
-	/*
-	        var visit_id = url.query.visit_id;
-	        var store = {};
-	        if( !(visit_id > 0) ){
-	            return Promise.reject("invalid parameter");
-	        }
-	        return db.getVisit(conn, visit_id)
-	        .then(function(visit){
-	            store.visit = visit;
-	            return db.getPatient(conn, visit.patient_id);
-	        })
-	        .then(function(patient){
-	            store.patient = patient;
-	            return db.listFullDrugs(conn, visit_id);
-	        })
-	        .then(function(drugs){
-	            store.drugs = drugs;
-	        })
-	        .then(function(){
-	            var data = {
-	                name: store.patient.last_name + store.patient.first_name,
-	                at: store.visit.v_datetime,
-	                drugs: store.drugs
-	            };
-	            return PrescContent.getOps(data);
-	        })
-	*/
+	function bindPrintButton(ops){
+		document.getElementById("print-button").addEventListener("click", function(event){
+			printUtil.print([ops], undefined, function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				window.close();
+			})
+		})
+	}
 
 /***/ },
 /* 1 */
@@ -255,7 +240,7 @@
 		});
 	}
 
-	exports.listDrugs = function(visitId, cb){ // list_full_drugs
+	exports.listFullDrugs = function(visitId, cb){ // list_full_drugs
 		cb(undefined, [
 			{
 				drug_id: 1123,
@@ -271,6 +256,51 @@
 			}
 		]);
 	};
+
+	exports.listDrugs = function(visitId, cb){
+		cb(undefined, [
+			{
+				drug_id: 2222,
+				visit_id: 3333,
+				d_iyakuhincode: 1234,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "5",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2223,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "6",
+				d_prescribed: 1
+			},
+			{
+				drug_id: 2224,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "7",
+				d_prescribed: 0
+			},
+			{
+				drug_id: 2225,
+				visit_id: 3333,
+				d_iyakuhincode: 1235,
+				d_category: 0,
+				d_amount: 3,
+				d_usage: "分３　毎食後",
+				d_days: "8",
+				d_prescribed: 0
+			},
+		])
+	}
 
 	exports.calcVisits = function(patientId, cb){
 		cb(undefined, 26);
@@ -307,7 +337,24 @@
 				]
 			}
 		]);
-	}
+	};
+
+	exports.listVisits = function(patientId, offset, count, cb){
+		cb(undefined, [
+			{
+				visit_id: 1234,
+				v_datetime: "2016-09-21 18:09:00",
+			},
+			{
+				visit_id: 1233,
+				v_datetime: "2016-08-21 18:09:00",
+			},
+			{
+				visit_id: 1232,
+				v_datetime: "2016-07-21 18:09:00",
+			}
+		]);
+	};
 
 	exports.listIyakuhinByPatient = function(patientId, cb){
 		cb(undefined, [
@@ -379,7 +426,11 @@
 			description: "DESCRIPTION",
 			sideeffect: "SIDEEFFECT"
 		})
-	}
+	};
+
+	exports.prescDone = function(visitId, done){
+		done();
+	};
 
 
 /***/ },
@@ -3066,7 +3117,28 @@
 				cb(err, result);
 			}
 		});
+	};
+
+	exports.insertAfter = function(refNode, newNode){
+		var parent = refNode.parentNode;
+		if( parent.lastChild === refNode ){
+			parent.appendChild(newNode);
+		} else {
+			parent.insertBefore(newNode, refNode.nextSibling);
+		}
 	}
+
+	exports.nextElementSibling = function(node){
+		var nextSib = node.nextSibling;
+		while( nextSib ){
+			if( nextSib.nodeType === 1 ){
+				return nextSib;
+			}
+			nextSib = nextSib.nextSibling;
+		}
+		return null;
+	};
+
 
 
 /***/ },
@@ -3149,6 +3221,41 @@
 	exports.HOUKATSU_COAGULO = "06";
 	exports.HOUKATSU_AUTOANTIBODY = "07";
 	exports.HOUKATSU_TOLERANCE = "08";
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var conti = __webpack_require__(3);
+
+	var printServerPort = 8082;
+
+	function printServerUrl(){
+		return location.protocol + "//" + "localhost" + ":" + printServerPort;
+	}
+
+	exports.setPrintServerPort = function(port){
+		printServerPort = port;
+	};
+
+	exports.print = function(pages, setting, done){
+		conti.fetchText(printServerUrl() + "/print", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				pages: pages,
+				setting: setting
+			}),
+			mode: "cors",
+			cache: "no-cache"
+		}, done);
+	};
+
 
 
 /***/ }
