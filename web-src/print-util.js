@@ -27,3 +27,33 @@ exports.print = function(pages, setting, done){
 	}, done);
 };
 
+exports.listSettings = function(cb){
+	conti.fetchJson(printServerUrl() + "/setting", {
+		method: "GET",
+		mode: "cors",
+		cache: "no-cache"
+	}, cb);
+};
+
+exports.getSetting = function(key){
+	return window.localStorage.getItem(key);
+};
+
+exports.setSetting = function(key, value){
+	if( value ){
+		window.localStorage.setItem(key, value);
+	} else {
+		removeSetting(key);
+	}
+};
+
+function removeSetting(key){
+	window.localStorage.removeItem(key);
+}
+
+exports.openManagePage = function(target){
+	open(printServerUrl(), target);
+}
+
+
+

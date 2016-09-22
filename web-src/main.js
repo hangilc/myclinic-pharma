@@ -13,6 +13,9 @@ require("./prev-techou");
 var util = require("./util");
 var patientListTmplSrc = require("raw!./patient-list.html");
 var patientListTmpl = hogan.compile(patientListTmplSrc);
+var printUtil = require("./print-util");
+var printerSettingTmplSrc = require("raw!./printer-setting.html");
+var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
 
 document.getElementById("refresh-button").addEventListener("click", function(event){
 	doRefresh();
@@ -107,5 +110,100 @@ document.body.addEventListener("presc-cancel", function(event){
 
 document.body.addEventListener("presc-done", function(event){
 	document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
-})
+});
+
+var prescPrinterSettingKey = "pharma:presc-printer-setting";
+var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+var techouPrinterSettingKey = "pharma:techou-printer-setting";
+
+document.getElementById("printer-setting-link").addEventListener("click", function(event){
+	event.preventDefault();
+	var workspace = document.getElementById("printer-setting-workspace");
+	if( workspace.style.display === "none" ){
+		var printSettings;
+		task.run(function(done){
+			printUtil.listSettings(function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				printSettings = result;
+				done();
+			})
+		}, function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			var prescKey = prescPrinterSettingKey;
+			var drugbagKey = drugbagPrinterSettingKey;
+			var techouKey = techouPrinterSettingKey;
+			var prescOptions = makePrintOptions(printUtil.getSetting(prescKey), printSettings);
+			var drugbagOptions = makePrintOptions(printUtil.getSetting(drugbagKey), printSettings);
+			var techouOptions = makePrintOptions(printUtil.getSetting(techouKey), printSettings);
+			var html = printerSettingTmpl.render({
+				"presc-key": prescKey,
+				"drugbag-key": drugbagKey,
+				"techou-key": techouKey,
+				prescOptions: prescOptions,
+				drugbagOptions: drugbagOptions,
+				techouOptions: techouOptions
+			});
+			workspace.innerHTML = html;
+			workspace.style.display = "block";
+		})
+	} else {
+		workspace.style.display = "none";
+		workspace.innerHTML = "";
+	}
+});
+
+function makePrintOptions(current, settings){
+	var options = settings.map(function(setting){
+		return {
+			label: setting,
+			value: setting
+		}
+	});
+	options.unshift({
+		label: "（設定なし）",
+		value: ""
+	});
+	options.forEach(function(opt){
+		if( current ){
+			if( opt.value === current ){
+				opt.selected = true;
+			}
+		} else {
+			if( !opt.value ){
+				opt.selected = true;
+			}
+		}
+	});
+	return options;
+}
+
+document.getElementById("printer-setting-workspace").addEventListener("change", function(event){
+	var target = event.target;
+	if( target.tagName === "SELECT" && target.classList.contains("printer-setting-option")){
+		var key = target.getAttribute("name");
+		var value = target.value;
+		printUtil.setSetting(key, value);
+	}
+});
+
+document.getElementById("printer-setting-workspace").addEventListener("click", function(event){
+	var target = event.target;
+	if( target.tagName === "BUTTON" && target.classList.contains("manage-printer-button") ){
+		printUtil.openManagePage("_blank");
+	}
+});
+
+document.getElementById("printer-setting-workspace").addEventListener("click", function(event){
+	var target = event.target;
+	if( target.tagName === "BUTTON" && target.classList.contains("close-button") ){
+		this.style.display = "none";
+		this.innerHTML = "";
+	}
+});
 

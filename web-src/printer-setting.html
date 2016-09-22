@@ -1,0 +1,33 @@
+<div style="margin: 6px">
+	<form onsubmit="return false">
+    処方内容 {{prescKey}}
+    <select name="{{presc-key}}" class="printer-setting-option">
+    	{{#prescOptions}}
+    		<option value="{{value}}" {{#selected}}selected{{/selected}}>
+    			{{label}}
+    		</option>
+		{{/prescOptions}}
+    </select>
+    <hr style="border: 1px solid #ccc; margin: 4px 0"/>
+    薬袋 
+    <select name="{{drugbag-key}}" class="printer-setting-option">
+    	{{#drugbagOptions}}
+    		<option value="{{value}}" {{#selected}}selected{{/selected}}>
+    			{{label}}
+    		</option>
+    	{{/drugbagOptions}}
+    </select>
+    <hr style="border: 1px solid #ccc; margin: 4px 0"/>
+    お薬手帳 
+    <select name="{{techou-key}}" class="printer-setting-option">
+    	{{#techouOptions}}
+    		<option value="{{value}}" {{#selected}}selected{{/selected}}>
+    			{{label}}
+    		</option>
+    	{{/techouOptions}}
+    </select>
+    <hr style="border: 1px solid #ccc; margin: 4px 0"/>
+    <button class="manage-printer-button">プリンター管理</button>
+    <button class="close-button">閉じる</button>   
+    </form>  
+</div>

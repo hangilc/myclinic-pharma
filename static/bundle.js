@@ -59,6 +59,9 @@
 	var util = __webpack_require__(12);
 	var patientListTmplSrc = __webpack_require__(13);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
+	var printUtil = __webpack_require__(25);
+	var printerSettingTmplSrc = __webpack_require__(26);
+	var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
 		doRefresh();
@@ -153,7 +156,102 @@
 
 	document.body.addEventListener("presc-done", function(event){
 		document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
-	})
+	});
+
+	var prescPrinterSettingKey = "pharma:presc-printer-setting";
+	var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+	var techouPrinterSettingKey = "pharma:techou-printer-setting";
+
+	document.getElementById("printer-setting-link").addEventListener("click", function(event){
+		event.preventDefault();
+		var workspace = document.getElementById("printer-setting-workspace");
+		if( workspace.style.display === "none" ){
+			var printSettings;
+			task.run(function(done){
+				printUtil.listSettings(function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					printSettings = result;
+					done();
+				})
+			}, function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				var prescKey = prescPrinterSettingKey;
+				var drugbagKey = drugbagPrinterSettingKey;
+				var techouKey = techouPrinterSettingKey;
+				var prescOptions = makePrintOptions(printUtil.getSetting(prescKey), printSettings);
+				var drugbagOptions = makePrintOptions(printUtil.getSetting(drugbagKey), printSettings);
+				var techouOptions = makePrintOptions(printUtil.getSetting(techouKey), printSettings);
+				var html = printerSettingTmpl.render({
+					"presc-key": prescKey,
+					"drugbag-key": drugbagKey,
+					"techou-key": techouKey,
+					prescOptions: prescOptions,
+					drugbagOptions: drugbagOptions,
+					techouOptions: techouOptions
+				});
+				workspace.innerHTML = html;
+				workspace.style.display = "block";
+			})
+		} else {
+			workspace.style.display = "none";
+			workspace.innerHTML = "";
+		}
+	});
+
+	function makePrintOptions(current, settings){
+		var options = settings.map(function(setting){
+			return {
+				label: setting,
+				value: setting
+			}
+		});
+		options.unshift({
+			label: "（設定なし）",
+			value: ""
+		});
+		options.forEach(function(opt){
+			if( current ){
+				if( opt.value === current ){
+					opt.selected = true;
+				}
+			} else {
+				if( !opt.value ){
+					opt.selected = true;
+				}
+			}
+		});
+		return options;
+	}
+
+	document.getElementById("printer-setting-workspace").addEventListener("change", function(event){
+		var target = event.target;
+		if( target.tagName === "SELECT" && target.classList.contains("printer-setting-option")){
+			var key = target.getAttribute("name");
+			var value = target.value;
+			printUtil.setSetting(key, value);
+		}
+	});
+
+	document.getElementById("printer-setting-workspace").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("manage-printer-button") ){
+			printUtil.openManagePage("_blank");
+		}
+	});
+
+	document.getElementById("printer-setting-workspace").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("close-button") ){
+			this.style.display = "none";
+			this.innerHTML = "";
+		}
+	});
 
 
 
@@ -7054,6 +7152,77 @@
 /***/ function(module, exports) {
 
 	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var conti = __webpack_require__(2);
+
+	var printServerPort = 8082;
+
+	function printServerUrl(){
+		return location.protocol + "//" + "localhost" + ":" + printServerPort;
+	}
+
+	exports.setPrintServerPort = function(port){
+		printServerPort = port;
+	};
+
+	exports.print = function(pages, setting, done){
+		conti.fetchText(printServerUrl() + "/print", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				pages: pages,
+				setting: setting
+			}),
+			mode: "cors",
+			cache: "no-cache"
+		}, done);
+	};
+
+	exports.listSettings = function(cb){
+		conti.fetchJson(printServerUrl() + "/setting", {
+			method: "GET",
+			mode: "cors",
+			cache: "no-cache"
+		}, cb);
+	};
+
+	exports.getSetting = function(key){
+		return window.localStorage.getItem(key);
+	};
+
+	exports.setSetting = function(key, value){
+		if( value ){
+			window.localStorage.setItem(key, value);
+		} else {
+			removeSetting(key);
+		}
+	};
+
+	function removeSetting(key){
+		window.localStorage.removeItem(key);
+	}
+
+	exports.openManagePage = function(target){
+		open(printServerUrl(), target);
+	}
+
+
+
+
+
+/***/ },
+/* 26 */
+/***/ function(module, exports) {
+
+	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
 
 /***/ }
 /******/ ]);
