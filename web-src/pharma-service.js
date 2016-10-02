@@ -3,7 +3,7 @@
 var service = require("myclinic-service-api");
 var conti = require("conti");
 
-exports.listPharmaQueue = function(cb){ // list_full_pharma_queue
+exports.listFullPharmaQueue = function(cb){ // list_full_pharma_queue
 	service.listFullPharmaQueue(cb);
 };
 
@@ -79,47 +79,51 @@ exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset,
 	service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count);
 };
 
-exports.getFullDrug = function(drugId, cb){
-	var drug, visit, fullDrug;
-	conti.exec([
-		function(done){
-			service.getDrug(drugId, function(err, result){
-				if( err ){
-					done(err);
-					return;
-				}
-				drug = result;
-				done();
-			})
-		},
-		function(done){
-			service.getVisit(drug.visit_id, function(err, result){
-				if( err ){
-					done(err);
-					return;
-				}
-				visit = result;
-				done();
-			})
-		},
-		function(done){
-			service.getFullDrug(drugId, visit.v_datetime, function(err, result){
-				if( err ){
-					done(err);
-					return;
-				}
-				fullDrug = result;
-				done();
-			})
-		}
-	], function(err){
-		if( err ){
-			cb(err);
-			return;
-		}
-		cb(undefined, fullDrug);
-	});
+exports.getFullDrug = function(drugId, at, cb){
+	service.getFullDrug(drugId, at, cb);
 };
+
+// exports.getFullDrug = function(drugId, cb){
+// 	var drug, visit, fullDrug;
+// 	conti.exec([
+// 		function(done){
+// 			service.getDrug(drugId, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				drug = result;
+// 				done();
+// 			})
+// 		},
+// 		function(done){
+// 			service.getVisit(drug.visit_id, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				visit = result;
+// 				done();
+// 			})
+// 		},
+// 		function(done){
+// 			service.getFullDrug(drugId, visit.v_datetime, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				fullDrug = result;
+// 				done();
+// 			})
+// 		}
+// 	], function(err){
+// 		if( err ){
+// 			cb(err);
+// 			return;
+// 		}
+// 		cb(undefined, fullDrug);
+// 	});
+// };
 
 exports.findPharmaDrug = function(iyakuhincode, cb){
 	service.findPharmaDrug(iyakuhincode, cb);
@@ -128,6 +132,11 @@ exports.findPharmaDrug = function(iyakuhincode, cb){
 exports.prescDone = function(visitId, done){
 	service.prescDone(visitId, done);
 };
+
+exports.getDrug = function(drugId, cb){
+	service.getDrug(drugId, cb);
+};
+
 
 /*
 exports.listPharmaQueue = function(cb){ // list_full_pharma_queue

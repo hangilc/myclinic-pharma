@@ -24,7 +24,7 @@ document.getElementById("refresh-button").addEventListener("click", function(eve
 function doRefresh(){
 	var resultList;
 	var includeAllPatientsChecked = includeAllPatients();
-	var loader = includeAllPatients() ? service.listTodaysVisits : service.listPharmaQueue;
+	var loader = includeAllPatients() ? service.listTodaysVisits : service.listFullPharmaQueue;
 	task.run(function(done){
 		loader(function(err, result){
 			if( err ){

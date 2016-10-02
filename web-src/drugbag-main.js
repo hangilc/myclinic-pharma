@@ -30,7 +30,7 @@ var printUtil = require("./print-util");
 })();
 
 function startAllDrugs(visitId){
-	var resultList;
+	var ctx = {}, drugBagData = null;
 	task.run([
 		function(done){
 			service.listDrugs(visitId, function(err, result){
@@ -38,28 +38,45 @@ function startAllDrugs(visitId){
 					done(err);
 					return;
 				}
-				resultList = result;
+				ctx.allDrugs = result;
+				ctx.drugs = nonPrescribedOnly() ? 
+					ctx.allDrugs.filter(function(drug){ return !drug.d_prescribed; }) :
+					ctx.allDrugs;
+				ctx.currentPage = ctx.drugs.length > 0 ? 1 : 0;
 				done();
 			})
+		},
+		function(done){
+			if( ctx.currentPage > 0 ){
+				var drugId = ctx.drugs[ctx.currentPage-1].drug_id;
+				fetchDataForDrugBag(drugId, function(err, result){
+					console.log("fetchDataForDrugBag cb:", err, result);
+					if( err ){
+						done(err);
+						return;
+					}
+					drugBagData = result;
+					done();
+				})
+			} else {
+				setImmediate(done);
+			}
 		}
 	], function(err){
 		if( err ){
-			cb(err);
+			alert(err);
 			return;
 		}
-		var allDrugs = resultList;
-		var drugs = nonPrescribedOnly() ? 
-			allDrugs.filter(function(drug){ return !drug.d_prescribed; }) :
-			allDrugs;
-		var ctx = {
-			allDrugs: allDrugs,
-			drugs: drugs,
-			currentPage: drugs.length > 0 ? 1 : 0
-		};
+		console.log(ctx, drugBagData);
 		bindPageNav(ctx);
 		navPageUpdate(ctx);
 		document.getElementById("page-nav-wrapper").style.display = "block";
-		updatePreviewDrug(ctx);
+		if( drugBagData ){
+			var ops = makeDrugBagOps(drugBagData.fullDrug, drugBagData.visit, drugBagData.patient, drugBagData.pharmaDrug);
+			renderDrugBag(ops);
+		} else {
+			clearDurgBag();
+		}
 		bindPrintButtonAllDrugs(ctx);
 	})
 }
@@ -67,33 +84,6 @@ function startAllDrugs(visitId){
 function nonPrescribedOnly(){
 	return document.getElementById("nonprescribed-only").checked;
 }
-
-// function previewAllDrugs(visitId){
-// 	fetchDrugs(visitId, function(err, result){
-// 		if( err ){
-// 			alert(err);
-// 			return;
-// 		}
-// 		var drugs;
-// 		if( document.getElementById("nonprescribed-only").checked ){
-// 			drugs = result.filter(function(drug){
-// 				return !drug.d_prescribed;
-// 			})
-// 		} else {
-// 			drugs = result;
-// 		}
-// 		var ctx = {
-// 			allDrugs: result,
-// 			drugs: drugs,
-// 			currentPage: drugs.length > 0 ? 1 : 0
-// 		};
-// 		bindPageNav(ctx);
-// 		navPageUpdate(ctx);
-// 		document.getElementById("page-nav-wrapper").style.display = "block";
-// 		updatePreviewDrug(ctx);
-// 		bindPrintButtonAllDrugs(ctx);
-// 	});
-// }
 
 function navPageUpdate(ctx){
 	document.getElementById("page-info-current").innerHTML = ctx.currentPage;
@@ -164,28 +154,6 @@ function updatePreviewDrug(ctx){
 		clearPreview();
 	}
 }
-
-// function fetchDrugs(visitId, cb){
-// 	var resultList;
-// 	task.run([
-// 		function(done){
-// 			service.listDrugs(visitId, function(err, result){
-// 				if( err ){
-// 					done(err);
-// 					return;
-// 				}
-// 				resultList = result;
-// 				done();
-// 			})
-// 		}
-// 	], function(err){
-// 		if( err ){
-// 			cb(err);
-// 			return;
-// 		}
-// 		cb(undefined, resultList);
-// 	})
-// }
 
 function bindPrintButtonAllDrugs(ctx){
 	document.getElementById("print-button").addEventListener("click", function(event){
@@ -270,6 +238,10 @@ function renderDrugBag(ops){
 	wrapper.appendChild(svg);
 }
 
+function clearDrugBag(){
+	document.getElementById("preview-area").innerHTML = "";
+}
+
 function composeAllDrugsPages(visitId, drugIds, cb){
 	var visit, patient, drugs = [];
 	conti.exec([
@@ -294,19 +266,19 @@ function composeAllDrugsPages(visitId, drugIds, cb){
 			})
 		},
 		function(done){
-			conti.forEach(drugIds, function(drugId, done){
-				service.getFullDrug(drugId, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					drugs.push(result);
-					done();
-				})
-			}, done);
+			service.listFullDrugs(visit.visit_id, visit.v_datetime, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				console.log(drugs);
+				drugs = result;
+				done();
+			})
 		},
 		function(done){
 			conti.forEach(drugs, function(drug, done){
+				console.log(drug.d_iyakuhincode);
 				service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
 					if( err ){
 						done(err);
@@ -332,15 +304,16 @@ function composeAllDrugsPages(visitId, drugIds, cb){
 }
 
 function composeSingleDrugOps(drugId, cb){
-	var drug, visit, patient, pharmaDrug;
+	var drug, visit, fullDrug, patient, pharmaDrug;
 	conti.exec([
 		function(done){
-			service.getFullDrug(drugId, function(err, result){
+			service.getDrug(drugId, function(err, result){
 				if( err ){
 					done(err);
 					return;
 				}
 				drug = result;
+				console.log("drug", drug);
 				done();
 			})
 		},
@@ -351,6 +324,17 @@ function composeSingleDrugOps(drugId, cb){
 					return;
 				}
 				visit = result;
+				done();
+			})
+		},
+		function(done){
+			service.getFullDrug(drug.drug_id, visit.v_datetime, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				fullDrug = result;
+				console.log("fullDrug", fullDrug);
 				done();
 			})
 		},
@@ -379,18 +363,18 @@ function composeSingleDrugOps(drugId, cb){
 			cb(err);
 			return;
 		}
-		var data = DrugBagData.createData(drug, visit, patient, pharmaDrug);
+		var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug);
 		var compiler = new DrugBag(data);
 		var ops = compiler.getOps();
 		cb(undefined, ops);
 	})	
 }
 
-function previewDrug(drugId){
-	var drug, visit, patient, pharmaDrug;
-	task.run([
+function fetchDataForDrugBag(drugId, cb){
+	var drug, visit, fullDrug, patient, pharmaDrug;
+	conti.exec([
 		function(done){
-			service.getFullDrug(drugId, function(err, result){
+			service.getDrug(drugId, function(err, result){
 				if( err ){
 					done(err);
 					return;
@@ -410,6 +394,17 @@ function previewDrug(drugId){
 			})
 		},
 		function(done){
+			service.getFullDrug(drug.drug_id, visit.v_datetime, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				fullDrug = result;
+				console.log("fullDrug", fullDrug);
+				done();
+			})
+		},
+		function(done){
 			service.getPatient(visit.patient_id, function(err, result){
 				if( err ){
 					done(err);
@@ -420,7 +415,9 @@ function previewDrug(drugId){
 			})
 		},
 		function(done){
+			console.log("before findPharmaDrug");
 			service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
+				console.log("findPharmaDrug cb:", err, result);
 				if( err ){
 					done(err);
 					return;
@@ -434,13 +431,79 @@ function previewDrug(drugId){
 			cb(err);
 			return;
 		}
-		var data = DrugBagData.createData(drug, visit, patient, pharmaDrug);
-		var compiler = new DrugBag(data);
-		var ops = compiler.getOps();
-		renderDrugBag(ops);
-		bindPrintButtonSingle(ops);
-	})
+		var data = {
+			fullDrug: fullDrug,
+			visit: visit,
+			patient: patient,
+			pharmaDrug: pharmaDrug
+		};
+		console.log("data", data);
+		cb(undefined, data);
+	})	
 }
+
+function makeDrugBagOps(fullDrug, visit, patient, pharmaDrug){
+	var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug);
+	var compiler = new DrugBag(data);
+	var ops = compiler.getOps();
+	return ops;
+}
+
+// function previewDrug(drugId){
+// 	var drug, visit, patient, pharmaDrug;
+// 	task.run([
+// 		function(done){
+// 			service.getFullDrug(drugId, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				drug = result;
+// 				done();
+// 			})
+// 		},
+// 		function(done){
+// 			service.getVisit(drug.visit_id, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				visit = result;
+// 				done();
+// 			})
+// 		},
+// 		function(done){
+// 			service.getPatient(visit.patient_id, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				patient = result;
+// 				done();
+// 			})
+// 		},
+// 		function(done){
+// 			service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
+// 				if( err ){
+// 					done(err);
+// 					return;
+// 				}
+// 				pharmaDrug = result;
+// 				done();
+// 			})
+// 		}
+// 	], function(err){
+// 		if( err ){
+// 			cb(err);
+// 			return;
+// 		}
+// 		var data = DrugBagData.createData(drug, visit, patient, pharmaDrug);
+// 		var compiler = new DrugBag(data);
+// 		var ops = compiler.getOps();
+// 		renderDrugBag(ops);
+// 		bindPrintButtonSingle(ops);
+// 	})
+// }
 
 function startBlank(kind){
 	var compiler = new DrugBag({
