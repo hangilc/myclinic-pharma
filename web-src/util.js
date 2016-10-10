@@ -154,7 +154,6 @@ exports.fetchAllDrugsData = function(visitId, cb){
 };
 
 exports.composeDrugBagOps = function(data){
-	console.log(data);
 	var compiler = new DrugBag(data);
 	return compiler.getOps();
 };
