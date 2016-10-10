@@ -1,7 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var pharma = require("./index");
-var config = require("./sample-config/pharma-config");
+var config = require("./test-config/pharma-config");
 
 var app = express();
 
