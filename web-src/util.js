@@ -145,7 +145,6 @@ exports.fetchAllDrugsData = function(visitId, cb){
 			cb(err);
 			return;
 		}
-		console.log("config", config);
 		var data = drugs.map(function(drug){
 			return DrugBagData.createData(drug, visit, patient, drug.pharmaDrug, 
 					config.drugbag.clinic_name, config.drugbag.clinic_address);
