@@ -54,13 +54,13 @@
 	var kanjidate = __webpack_require__(9);
 	var moment = __webpack_require__(10);
 	var PackagingPatient = __webpack_require__(117);
-	var AuxInfo = __webpack_require__(122);
-	__webpack_require__(127);
+	var AuxInfo = __webpack_require__(133);
+	__webpack_require__(138);
 	var util = __webpack_require__(118);
-	var patientListTmplSrc = __webpack_require__(119);
+	var patientListTmplSrc = __webpack_require__(129);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
-	var printUtil = __webpack_require__(131);
-	var printerSettingTmplSrc = __webpack_require__(132);
+	var printUtil = __webpack_require__(132);
+	var printerSettingTmplSrc = __webpack_require__(142);
 	var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
@@ -155,7 +155,8 @@
 	});
 
 	document.body.addEventListener("presc-done", function(event){
-		document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+		//document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+		doRefresh();
 	});
 
 	var prescPrinterSettingKey = "pharma:presc-printer-setting";
@@ -17065,13 +17066,13 @@
 	var kanjidate = __webpack_require__(9);
 	var moment = __webpack_require__(10);
 	var util = __webpack_require__(118);
-	var patientListTmplSrc = __webpack_require__(119);
+	var patientListTmplSrc = __webpack_require__(129);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
-	var packagingPatientTmplSrc = __webpack_require__(120);
+	var packagingPatientTmplSrc = __webpack_require__(130);
 	var packagingPatientTmpl = hogan.compile(packagingPatientTmplSrc);
-	var drugListTmplSrc = __webpack_require__(121);
+	var drugListTmplSrc = __webpack_require__(131);
 	var drugListTmpl = hogan.compile(drugListTmplSrc);
-	var printUtil = __webpack_require__(131);
+	var printUtil = __webpack_require__(132);
 
 	var ctx = {
 		currentVisitId: 0
@@ -17318,10 +17319,10 @@
 	var mConsts = __webpack_require__(8);
 	var conti = __webpack_require__(2);
 	var service = __webpack_require__(6);
-	var PrescContent = __webpack_require__(133).PrescContent;
+	var PrescContent = __webpack_require__(119).PrescContent;
 	var kanjidate = __webpack_require__(9);
-	var DrugBagData = __webpack_require__(142);
-	var DrugBag = __webpack_require__(133).DrugBag;
+	var DrugBagData = __webpack_require__(128);
+	var DrugBag = __webpack_require__(119).DrugBag;
 
 	exports.drugRep = function(drug){
 		var category = parseInt(drug.d_category, 10);
@@ -17549,717 +17550,26 @@
 
 /***/ },
 /* 119 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "{{#list}}\r\n<tr>\r\n\t<td class=\"{{class}} pqueue-item\" title=\"患者番号：{{patient_id}}\" data-visit-id=\"{{visit_id}}\">\r\n\t\t{{last_name}}{{first_name}} ({{last_name_yomi }}{{first_name_yomi }})\r\n\t</td>\r\n</tr>\r\n{{/list}}\r\n"
+	"use strict";
+
+	exports.Shohousen = __webpack_require__(120);
+	exports.Refer = __webpack_require__(125);
+	exports.DrugBag = __webpack_require__(126);
+	exports.PrescContent = __webpack_require__(127);
+
+
+
 
 /***/ },
 /* 120 */
-/***/ function(module, exports) {
-
-	module.exports = "<div id=\"packaging_patient_name\">{{last_name}} {{first_name}}</div>\r\n<div id=\"packaging_patient_yomi\">{{last_name_yomi}} {{first_name_yomi}}</div>\r\n<div id=\"packaging_patient_info\">\r\n\t患者番号 {{patient_id}} {{birthday_rep}} {{sex_rep}}\r\n</div>\r\n"
-
-/***/ },
-/* 121 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n<div>\r\n\t{{index}}) \r\n\t{{rep}} <a href=\"javascript:void(0)\" class=\"print-drugbag-link\" data-drug-id=\"{{drug_id}}\">薬袋</a>\r\n\t{{#d_prescribed}}<b>処方済</b>{{/d_prescribed}}\r\n</div>\r\n{{/list}}"
-
-/***/ },
-/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var task = __webpack_require__(1);
-	var service = __webpack_require__(6);
-	var hogan = __webpack_require__(3);
-	var visitsNavTmplSrc = __webpack_require__(123);
-	var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
-	var visitsBoxTmplSrc = __webpack_require__(124);
-	var visitsBoxTmpl = hogan.compile(visitsBoxTmplSrc);
-	var kanjidate = __webpack_require__(9);
-	var util = __webpack_require__(118);
-	var submenuByDrugTmplSrc = __webpack_require__(125);
-	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
-	var submenuByDrugSelectedTmplSrc = __webpack_require__(126);
-	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
-
-	var wrapper = document.getElementById("aux-info");
-	var submenu = document.getElementById("control-box-submenu");
-	var visitsBox = document.getElementById("visits-box");
-
-	var ctx = initialCtx();
-	var visitsPerPage = 5;
-
-	function initialCtx(){
-		return {
-			visitId: 0,
-			patientId: 0,
-			byDate: {
-				current: 0,
-				nPages: 0
-			},
-			byDrug: {
-				drugs: null,
-				currentName: "",
-				currentIyakuhincode: 0,
-				currentPage: 1,
-				nPages: 0
-			}
-		};
-	}
-
-	exports.open = function(visitId){
-		ctx = initialCtx();
-		openByDate(visitId);
-	}
-
-	function openByDate(visitId){
-		wrapper.querySelector("input[name=mode][value=by-date]").checked = true;
-		loadByDateData(visitId, function(err, result){
-			if( err ){
-				alert(err);
-				return;
-			}
-			ctx.visitId = result.visit.visit_id;
-			ctx.patientId = result.patient.patient_id;
-			ctx.byDate.current = 1;
-			ctx.byDate.nPages = calcNumberOfPages(result.nVisits, visitsPerPage);
-			renderSubmenuByDate();
-			updateVisitsByDate();
-			wrapper.style.display = "block";
-		})
-	}
-
-	function renderSubmenuByDate(){
-		if( ctx.byDate.nPages > 1 ){
-			var html = visitsNavTmpl.render({
-				current: ctx.byDate.current,
-				total: ctx.byDate.nPages
-			})
-			submenu.innerHTML = html;
-		} else {
-			submenu.innerHTML = "";
-		}
-	}
-
-	function renderSubmenuByDrug(){
-		var html;
-		if( !ctx.byDrug.currentName ){
-			html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
-		} else {
-			html = submenuByDrugSelectedTmpl.render({
-				name: ctx.byDrug.currentName,
-				current: ctx.byDrug.currentPage,
-				total: ctx.byDrug.nPages,
-				requirePaging: ctx.byDrug.nPages > 1
-			});
-		}
-		submenu.innerHTML = html;
-	}
-
-	function loadByDateData(visitId, cb){
-		var visit, patient, nVisits;
-		task.run([
-			function(done){
-				service.getVisit(visitId, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					visit = result;
-					done();
-				})
-			},
-			function(done){
-				service.getPatient(visit.patient_id, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					patient = result;
-					done();
-				})
-			},
-			function(done){
-				service.calcVisits(patient.patient_id, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					nVisits = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				cb(err);
-				return;
-			}
-			cb(undefined, {
-				visit: visit,
-				patient: patient,
-				nVisits: nVisits
-			})
-		});	
-	}
-
-	function loadByDrugData(patientId, cb){
-		var resultList;
-		task.run([
-			function(done){
-				service.listIyakuhinByPatient(patientId, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					resultList = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				alert(err);
-				return;
-			}
-			cb(undefined, resultList);
-		})
-	}
-
-	function updateVisitsByDate(){
-		var current = ctx.byDate.current;
-		if( current <= 0 ){
-			current = 1;
-		}
-		var resultList;
-		task.run([
-			function(done){
-				service.listFullVisits(ctx.patientId, (current-1)*visitsPerPage, visitsPerPage, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					resultList = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				alert(err);
-				return;
-			}
-			renderVisits(resultList);
-		})
-	}
-
-	function updateVisitsByDrug(){
-		var current = ctx.byDrug.currentPage;
-		if( current <= 0 ){
-			current = 1;
-		}
-		var patientId = ctx.patientId;
-		var iyakuhincode = ctx.byDrug.currentIyakuhincode;
-		var offset = (current - 1) * visitsPerPage;
-		var resultList;
-		task.run([
-			function(done){
-				service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, visitsPerPage, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					resultList = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				alert(err);
-				return;
-			}
-			renderVisits(resultList);
-		})
-	}
-
-	function calcNumberOfPages(total, perPage){
-		return Math.floor((total + perPage - 1) / perPage);
-	}
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("visits-nav-first") ){
-			if( ctx.byDate.current > 1 ){
-				ctx.byDate.current = 1;
-				renderSubmenuByDate();
-				updateVisitsByDate();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("visits-nav-prev") ){
-			if( ctx.byDate.current > 1 ){
-				ctx.byDate.current -= 1;
-				renderSubmenuByDate();
-				updateVisitsByDate();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("visits-nav-next") ){
-			if( ctx.byDate.current < ctx.byDate.nPages ){
-				ctx.byDate.current += 1;
-				renderSubmenuByDate();
-				updateVisitsByDate();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("visits-nav-last") ){
-			if( ctx.byDate.current < ctx.byDate.nPages ){
-				ctx.byDate.current = ctx.byDate.nPages;
-				renderSubmenuByDate();
-				updateVisitsByDate();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-selected-first") ){
-			if( ctx.byDrug.currentPage > 1 ){
-				ctx.byDrug.currentPage = 1;
-				renderSubmenuByDrug();
-				updateVisitsByDrug();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-selected-prev") ){
-			if( ctx.byDrug.currentPage > 1 ){
-				ctx.byDrug.currentPage -= 1;
-				renderSubmenuByDrug();
-				updateVisitsByDrug();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-selected-next") ){
-			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
-				ctx.byDrug.currentPage += 1;
-				renderSubmenuByDrug();
-				updateVisitsByDrug();
-			}
-		}
-	})
-
-	wrapper.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-selected-last") ){
-			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
-				ctx.byDrug.currentPage = ctx.byDrug.nPages;
-				renderSubmenuByDrug();
-				updateVisitsByDrug();
-			}
-		}
-	})
-
-	submenu.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-item") ){
-			var iyakuhincode = +event.target.getAttribute("data-iyakuhincode");
-			var resultCount;
-			task.run([
-				function(done){
-					service.countVisitsByIyakuhincode(ctx.patientId, iyakuhincode, function(err, result){
-						if( err ){
-							done(err);
-							return;
-						}
-						resultCount = result;
-						done();
-					})
-				}
-			], function(err){
-				if( err ){
-					alert(err);
-					return;
-				}
-				ctx.byDrug.currentPage = 1;
-				ctx.byDrug.nPages = calcNumberOfPages(resultCount, visitsPerPage);
-				ctx.byDrug.currentName = "";
-				ctx.byDrug.currentIyakuhincode = 0;
-				for(var i=0;i<ctx.byDrug.drugs.length;i++){
-					var drug = ctx.byDrug.drugs[i];
-					if( drug.iyakuhincode === iyakuhincode ){
-						ctx.byDrug.currentName = drug.name;
-						ctx.byDrug.currentIyakuhincode = drug.iyakuhincode;
-						break;
-					}
-				}
-				renderSubmenuByDrug();
-				updateVisitsByDrug();
-			})
-		}
-	});
-
-	submenu.addEventListener("click", function(event){
-		if( event.target.classList.contains("by-drug-goto-list") ){
-			ctx.byDrug.currentName = "";
-			ctx.byDrug.currentPage = 1;
-			ctx.byDrug.currentIyakuhincode = 0;
-			ctx.byDrug.nPages = 0;
-			renderSubmenuByDrug();
-			renderVisits([]);
-		}
-	});
-
-	function renderVisits(visits){
-		var index = 1;
-		var list = visits.map(function(visit){
-			return {
-				dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
-				texts: visit.texts.map(function(text){
-					return text.content.replace(/\n/g, "<br />\n")
-				}),
-				drugs: visit.drugs.map(function(drug){
-					return (index++) + ") " + util.drugRep(drug);
-				})
-			};
-		});
-		var html = visitsBoxTmpl.render({list: list});
-		visitsBox.innerHTML = html;
-	}
-
-	document.querySelectorAll("#aux-info input[name=mode]").forEach(function(e){
-		e.addEventListener("click", function(event){
-			var mode = event.target.value;
-			if( mode === "by-date" ){
-				renderSubmenuByDate();
-				updateVisitsByDate();
-			} else if( mode === "by-drug" ){
-				if( ctx.byDrug.drugs === null ){
-					loadByDrugData(ctx.patientId, function(err, result){
-						if( err ){
-							alert(err);
-							return;
-						}
-						ctx.byDrug.drugs = result;
-						ctx.byDrug.currentName = "";
-						ctx.byDrug.currentIyakuhincode = 0;
-						ctx.byDrug.currentPage = 1;
-						ctx.byDrug.nPages = 0;
-						renderSubmenuByDrug();
-						renderVisits([]);
-					});
-				} else {
-					renderSubmenuByDrug();
-					updateVisitsByDrug();
-				}
-			} else {
-				alert("unknown mode: " + mode);
-				return;
-			}
-		});
-	});
-
-	function doClose(){
-		ctx = initialCtx();
-		wrapper.style.display = "none";
-	}
-
-	document.body.addEventListener("presc-cancel", function(event){
-		doClose();
-	});
-	document.body.addEventListener("presc-done", function(event){
-		doClose();
-	});
-
-/***/ },
-/* 123 */
-/***/ function(module, exports) {
-
-	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n</div>"
-
-/***/ },
-/* 124 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<div class=\"visit-date\">{{dateRep}}</div>\r\n\t\t<table width=\"100%\">\r\n\t\t\t<tr style=\"vertical-align: top\">\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#texts}}\r\n\t\t\t\t\t\t<div>{{& .}}</div>\r\n\t\t\t\t\t{{/texts}}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#drugs}}\r\n\t\t\t\t\t\t<div>{{.}}</div>\r\n\t\t\t\t\t{{/drugs}}\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t</div>\r\n{{/list}}"
-
-/***/ },
-/* 125 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}"
-
-/***/ },
-/* 126 */
-/***/ function(module, exports) {
-
-	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n{{#requirePaging}}\r\n<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-last\">&raquo;</a>\r\n</div>\r\n{{/requirePaging}}\r\n"
-
-/***/ },
-/* 127 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var task = __webpack_require__(1);
-	var service = __webpack_require__(6);
-	var kanjidate = __webpack_require__(9);
-	var hogan = __webpack_require__(3);
-	var util = __webpack_require__(118);
-	var patientInfoTmplSrc = __webpack_require__(128);
-	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
-	var visitsTmplSrc = __webpack_require__(129);
-	var visitsTmpl = hogan.compile(visitsTmplSrc);
-	var drugsTmplSrc = __webpack_require__(130);
-	var drugsTmpl = hogan.compile(drugsTmplSrc);
-
-	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
-		var text = event.target.querySelector("input[type=text]").value;
-		if( !text.match(/^\d+$/) ){
-			alert("患者番号が適切でありません。");
-			return;
-		}
-		var patientId = +text;
-		fetchData(patientId, function(err, data){
-			if( err ){
-				alert(err);
-				return;
-			}
-			renderPatient(data.patient);
-			renderVisits(data.visits);
-		})
-	});
-
-	function renderPatient(patient){
-		var html = patientInfoTmpl.render(patient);
-		document.getElementById("previous-techou-patient").innerHTML = html;
-	}
-
-	function renderVisits(visits){
-		var list = visits.map(function(visit){
-			return {
-				visit_id: visit.visit_id,
-				label: kanjidate.format(kanjidate.f1, visit.v_datetime)
-			};
-		});
-		var html = visitsTmpl.render({list: list});
-		document.getElementById("previous-techou-visits").innerHTML = html;
-	}
-
-	function fetchData(patientId, cb){
-		var patient, visits;
-		task.run([
-			function(done){
-				service.getPatient(patientId, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					patient = result;
-					done();
-				})
-			},
-			function(done){
-				service.listVisits(patientId, 0, 10, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					visits = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				cb(err);
-				return;
-			}
-			cb(undefined, {
-				patient: patient,
-				visits: visits
-			});
-		});
-	}
-
-	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "A" && target.hasAttribute("data-visit-id") ){
-			var nextElement = util.nextElementSibling(target);
-			if( nextElement !== null && nextElement.getAttribute("data-kind") === "prev-techou-drugs" ){
-				nextElement.parentNode.removeChild(nextElement);
-				return;
-			}
-			var visitId = target.getAttribute("data-visit-id");
-			var drugs;
-			task.run([
-				function(done){
-					service.listFullDrugs(visitId, function(err, result){
-						if( err ){
-							done(err);
-							return;
-						}
-						drugs = result;
-						done();
-					})
-				}
-			], function(err){
-				if( err ){
-					alert(err);
-					return;
-				}
-				var index = 1;
-				var list = drugs.map(function(drug){
-					return {
-						label: util.drugRep(drug),
-					}
-				});
-				var html = drugsTmpl.render({list: list, visit_id: visitId});
-				var dom = document.createElement("div");
-				dom.setAttribute("data-kind", "prev-techou-drugs");
-				dom.innerHTML = html;
-				util.insertAfter(event.target, dom);
-			})
-		}
-	});
-
-	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "BUTTON" && target.classList.contains("print-prev-techou-button") ){
-			var visitId = target.getAttribute("data-visit-id");
-			window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
-		}
-	});
-
-	function doClear(){
-		var wrapper = document.getElementById("previous-techou-wrapper");
-		wrapper.querySelector("form.search-form input[type=text]").value = "";
-		document.getElementById("previous-techou-patient").innerHTML = "";
-		document.getElementById("previous-techou-visits").innerHTML = "";
-	}
-
-	document.getElementById("previous-techou-patient").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "BUTTON" && target.classList.contains("end-button") ){
-			doClear();
-		}
-	});
-
-/***/ },
-/* 128 */
-/***/ function(module, exports) {
-
-	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
-
-/***/ },
-/* 129 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
-
-/***/ },
-/* 130 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
-
-/***/ },
-/* 131 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var conti = __webpack_require__(2);
-
-	var printServerPort = 8082;
-
-	function printServerUrl(){
-		return location.protocol + "//" + "localhost" + ":" + printServerPort;
-	}
-
-	exports.setPrintServerPort = function(port){
-		printServerPort = port;
-	};
-
-	exports.print = function(pages, setting, done){
-		conti.fetchText(printServerUrl() + "/print", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				pages: pages,
-				setting: setting
-			}),
-			mode: "cors",
-			cache: "no-cache"
-		}, done);
-	};
-
-	exports.listSettings = function(cb){
-		conti.fetchJson(printServerUrl() + "/setting", {
-			method: "GET",
-			mode: "cors",
-			cache: "no-cache"
-		}, cb);
-	};
-
-	exports.getSetting = function(key){
-		return window.localStorage.getItem(key);
-	};
-
-	exports.setSetting = function(key, value){
-		if( value ){
-			window.localStorage.setItem(key, value);
-		} else {
-			removeSetting(key);
-		}
-	};
-
-	function removeSetting(key){
-		window.localStorage.removeItem(key);
-	}
-
-	exports.openManagePage = function(target){
-		open(printServerUrl(), target);
-	}
-
-
-
-
-
-/***/ },
-/* 132 */
-/***/ function(module, exports) {
-
-	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
-
-/***/ },
-/* 133 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	exports.Shohousen = __webpack_require__(134);
-	exports.Refer = __webpack_require__(139);
-	exports.DrugBag = __webpack_require__(140);
-	exports.PrescContent = __webpack_require__(141);
-
-
-
-
-/***/ },
-/* 134 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var Compiler = __webpack_require__(135).Compiler;
-	var Box = __webpack_require__(135).Box;
+	var Compiler = __webpack_require__(121).Compiler;
+	var Box = __webpack_require__(121).Box;
 
 	function Shohousen(){
 		this.compiler = new Compiler();
@@ -18799,14 +18109,14 @@
 
 
 /***/ },
-/* 135 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Ops = __webpack_require__(136);
-	var Box = __webpack_require__(137);
-	var Compiler = __webpack_require__(138);
+	var Ops = __webpack_require__(122);
+	var Box = __webpack_require__(123);
+	var Compiler = __webpack_require__(124);
 
 	exports.op = Ops;
 	exports.Box = Box;
@@ -18816,7 +18126,7 @@
 
 
 /***/ },
-/* 136 */
+/* 122 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -18866,7 +18176,7 @@
 
 
 /***/ },
-/* 137 */
+/* 123 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -19153,13 +18463,13 @@
 
 
 /***/ },
-/* 138 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var drawerOps = __webpack_require__(136);
-	var Box = __webpack_require__(137);
+	var drawerOps = __webpack_require__(122);
+	var Box = __webpack_require__(123);
 
 	function DrawerCompiler(){
 	    this.ops = [];
@@ -19644,13 +18954,13 @@
 
 
 /***/ },
-/* 139 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Compiler = __webpack_require__(135).Compiler;
-	var Box = __webpack_require__(135).Box;
+	var Compiler = __webpack_require__(121).Compiler;
+	var Box = __webpack_require__(121).Box;
 
 	function Refer(data){
 		this.compiler = new Compiler();
@@ -19814,13 +19124,13 @@
 
 
 /***/ },
-/* 140 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Compiler = __webpack_require__(135).Compiler;
-	var Box = __webpack_require__(135).Box;
+	var Compiler = __webpack_require__(121).Compiler;
+	var Box = __webpack_require__(121).Box;
 
 	var GOTHIC = "MS GOTHIC";
 	var MINCHO = "MS MINCHO";
@@ -20012,13 +19322,13 @@
 
 
 /***/ },
-/* 141 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Compiler = __webpack_require__(135).Compiler;
-	var Box = __webpack_require__(135).Box;
+	var Compiler = __webpack_require__(121).Compiler;
+	var Box = __webpack_require__(121).Box;
 
 	exports.getOps = function(data, config){
 	    config = setup(config || {});
@@ -20091,7 +19401,7 @@
 
 
 /***/ },
-/* 142 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -20099,8 +19409,8 @@
 	// var service = require("./pharma-service");
 	// var task = require("./task");
 	var mConsts = __webpack_require__(8);
-	var DrugBag = __webpack_require__(133).DrugBag;
-	var DrawerCompiler = __webpack_require__(135).Compiler;
+	var DrugBag = __webpack_require__(119).DrugBag;
+	var DrawerCompiler = __webpack_require__(121).Compiler;
 	var kanjidate = __webpack_require__(9);
 
 	exports.createData = function(drug, visit, patient, pharmaDrug, clinicName, clinicAddr){
@@ -20382,6 +19692,697 @@
 	}
 
 
+
+/***/ },
+/* 129 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n<tr>\r\n\t<td class=\"{{class}} pqueue-item\" title=\"患者番号：{{patient_id}}\" data-visit-id=\"{{visit_id}}\">\r\n\t\t{{last_name}}{{first_name}} ({{last_name_yomi }}{{first_name_yomi }})\r\n\t</td>\r\n</tr>\r\n{{/list}}\r\n"
+
+/***/ },
+/* 130 */
+/***/ function(module, exports) {
+
+	module.exports = "<div id=\"packaging_patient_name\">{{last_name}} {{first_name}}</div>\r\n<div id=\"packaging_patient_yomi\">{{last_name_yomi}} {{first_name_yomi}}</div>\r\n<div id=\"packaging_patient_info\">\r\n\t患者番号 {{patient_id}} {{birthday_rep}} {{sex_rep}}\r\n</div>\r\n"
+
+/***/ },
+/* 131 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n<div>\r\n\t{{index}}) \r\n\t{{rep}} <a href=\"javascript:void(0)\" class=\"print-drugbag-link\" data-drug-id=\"{{drug_id}}\">薬袋</a>\r\n\t{{#d_prescribed}}<b>処方済</b>{{/d_prescribed}}\r\n</div>\r\n{{/list}}"
+
+/***/ },
+/* 132 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var conti = __webpack_require__(2);
+
+	var printServerPort = 8082;
+
+	function printServerUrl(){
+		return location.protocol + "//" + "localhost" + ":" + printServerPort;
+	}
+
+	exports.setPrintServerPort = function(port){
+		printServerPort = port;
+	};
+
+	exports.print = function(pages, setting, done){
+		conti.fetchText(printServerUrl() + "/print", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				pages: pages,
+				setting: setting
+			}),
+			mode: "cors",
+			cache: "no-cache"
+		}, done);
+	};
+
+	exports.listSettings = function(cb){
+		conti.fetchJson(printServerUrl() + "/setting", {
+			method: "GET",
+			mode: "cors",
+			cache: "no-cache"
+		}, cb);
+	};
+
+	exports.getSetting = function(key){
+		return window.localStorage.getItem(key);
+	};
+
+	exports.setSetting = function(key, value){
+		if( value ){
+			window.localStorage.setItem(key, value);
+		} else {
+			removeSetting(key);
+		}
+	};
+
+	function removeSetting(key){
+		window.localStorage.removeItem(key);
+	}
+
+	exports.openManagePage = function(target){
+		open(printServerUrl(), target);
+	}
+
+
+
+
+
+/***/ },
+/* 133 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var task = __webpack_require__(1);
+	var service = __webpack_require__(6);
+	var hogan = __webpack_require__(3);
+	var visitsNavTmplSrc = __webpack_require__(134);
+	var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
+	var visitsBoxTmplSrc = __webpack_require__(135);
+	var visitsBoxTmpl = hogan.compile(visitsBoxTmplSrc);
+	var kanjidate = __webpack_require__(9);
+	var util = __webpack_require__(118);
+	var submenuByDrugTmplSrc = __webpack_require__(136);
+	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
+	var submenuByDrugSelectedTmplSrc = __webpack_require__(137);
+	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
+
+	var wrapper = document.getElementById("aux-info");
+	var submenu = document.getElementById("control-box-submenu");
+	var visitsBox = document.getElementById("visits-box");
+
+	var ctx = initialCtx();
+	var visitsPerPage = 5;
+
+	function initialCtx(){
+		return {
+			visitId: 0,
+			patientId: 0,
+			byDate: {
+				current: 0,
+				nPages: 0
+			},
+			byDrug: {
+				drugs: null,
+				currentName: "",
+				currentIyakuhincode: 0,
+				currentPage: 1,
+				nPages: 0
+			}
+		};
+	}
+
+	exports.open = function(visitId){
+		ctx = initialCtx();
+		openByDate(visitId);
+	}
+
+	function openByDate(visitId){
+		wrapper.querySelector("input[name=mode][value=by-date]").checked = true;
+		loadByDateData(visitId, function(err, result){
+			if( err ){
+				alert(err);
+				return;
+			}
+			ctx.visitId = result.visit.visit_id;
+			ctx.patientId = result.patient.patient_id;
+			ctx.byDate.current = 1;
+			ctx.byDate.nPages = calcNumberOfPages(result.nVisits, visitsPerPage);
+			renderSubmenuByDate();
+			updateVisitsByDate();
+			wrapper.style.display = "block";
+		})
+	}
+
+	function renderSubmenuByDate(){
+		if( ctx.byDate.nPages > 1 ){
+			var html = visitsNavTmpl.render({
+				current: ctx.byDate.current,
+				total: ctx.byDate.nPages
+			})
+			submenu.innerHTML = html;
+		} else {
+			submenu.innerHTML = "";
+		}
+	}
+
+	function renderSubmenuByDrug(){
+		var html;
+		if( !ctx.byDrug.currentName ){
+			html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
+		} else {
+			html = submenuByDrugSelectedTmpl.render({
+				name: ctx.byDrug.currentName,
+				current: ctx.byDrug.currentPage,
+				total: ctx.byDrug.nPages,
+				requirePaging: ctx.byDrug.nPages > 1
+			});
+		}
+		submenu.innerHTML = html;
+	}
+
+	function loadByDateData(visitId, cb){
+		var visit, patient, nVisits;
+		task.run([
+			function(done){
+				service.getVisit(visitId, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					visit = result;
+					done();
+				})
+			},
+			function(done){
+				service.getPatient(visit.patient_id, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					patient = result;
+					done();
+				})
+			},
+			function(done){
+				service.calcVisits(patient.patient_id, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					nVisits = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				cb(err);
+				return;
+			}
+			cb(undefined, {
+				visit: visit,
+				patient: patient,
+				nVisits: nVisits
+			})
+		});	
+	}
+
+	function loadByDrugData(patientId, cb){
+		var resultList;
+		task.run([
+			function(done){
+				service.listIyakuhinByPatient(patientId, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					resultList = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			cb(undefined, resultList);
+		})
+	}
+
+	function updateVisitsByDate(){
+		var current = ctx.byDate.current;
+		if( current <= 0 ){
+			current = 1;
+		}
+		var resultList;
+		task.run([
+			function(done){
+				service.listFullVisits(ctx.patientId, (current-1)*visitsPerPage, visitsPerPage, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					resultList = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderVisits(resultList);
+		})
+	}
+
+	function updateVisitsByDrug(){
+		var current = ctx.byDrug.currentPage;
+		if( current <= 0 ){
+			current = 1;
+		}
+		var patientId = ctx.patientId;
+		var iyakuhincode = ctx.byDrug.currentIyakuhincode;
+		var offset = (current - 1) * visitsPerPage;
+		var resultList;
+		task.run([
+			function(done){
+				service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, visitsPerPage, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					resultList = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderVisits(resultList);
+		})
+	}
+
+	function calcNumberOfPages(total, perPage){
+		return Math.floor((total + perPage - 1) / perPage);
+	}
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-first") ){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current = 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-prev") ){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current -= 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-next") ){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current += 1;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-last") ){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current = ctx.byDate.nPages;
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-first") ){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage = 1;
+				renderSubmenuByDrug();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-prev") ){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage -= 1;
+				renderSubmenuByDrug();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-next") ){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage += 1;
+				renderSubmenuByDrug();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-selected-last") ){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage = ctx.byDrug.nPages;
+				renderSubmenuByDrug();
+				updateVisitsByDrug();
+			}
+		}
+	})
+
+	submenu.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-item") ){
+			var iyakuhincode = +event.target.getAttribute("data-iyakuhincode");
+			var resultCount;
+			task.run([
+				function(done){
+					service.countVisitsByIyakuhincode(ctx.patientId, iyakuhincode, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						resultCount = result;
+						done();
+					})
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				ctx.byDrug.currentPage = 1;
+				ctx.byDrug.nPages = calcNumberOfPages(resultCount, visitsPerPage);
+				ctx.byDrug.currentName = "";
+				ctx.byDrug.currentIyakuhincode = 0;
+				for(var i=0;i<ctx.byDrug.drugs.length;i++){
+					var drug = ctx.byDrug.drugs[i];
+					if( drug.iyakuhincode === iyakuhincode ){
+						ctx.byDrug.currentName = drug.name;
+						ctx.byDrug.currentIyakuhincode = drug.iyakuhincode;
+						break;
+					}
+				}
+				renderSubmenuByDrug();
+				updateVisitsByDrug();
+			})
+		}
+	});
+
+	submenu.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-goto-list") ){
+			ctx.byDrug.currentName = "";
+			ctx.byDrug.currentPage = 1;
+			ctx.byDrug.currentIyakuhincode = 0;
+			ctx.byDrug.nPages = 0;
+			renderSubmenuByDrug();
+			renderVisits([]);
+		}
+	});
+
+	function renderVisits(visits){
+		var index = 1;
+		var list = visits.map(function(visit){
+			return {
+				dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
+				texts: visit.texts.map(function(text){
+					return text.content.replace(/\n/g, "<br />\n")
+				}),
+				drugs: visit.drugs.map(function(drug){
+					return (index++) + ") " + util.drugRep(drug);
+				})
+			};
+		});
+		var html = visitsBoxTmpl.render({list: list});
+		visitsBox.innerHTML = html;
+	}
+
+	document.querySelectorAll("#aux-info input[name=mode]").forEach(function(e){
+		e.addEventListener("click", function(event){
+			var mode = event.target.value;
+			if( mode === "by-date" ){
+				renderSubmenuByDate();
+				updateVisitsByDate();
+			} else if( mode === "by-drug" ){
+				if( ctx.byDrug.drugs === null ){
+					loadByDrugData(ctx.patientId, function(err, result){
+						if( err ){
+							alert(err);
+							return;
+						}
+						ctx.byDrug.drugs = result;
+						ctx.byDrug.currentName = "";
+						ctx.byDrug.currentIyakuhincode = 0;
+						ctx.byDrug.currentPage = 1;
+						ctx.byDrug.nPages = 0;
+						renderSubmenuByDrug();
+						renderVisits([]);
+					});
+				} else {
+					renderSubmenuByDrug();
+					updateVisitsByDrug();
+				}
+			} else {
+				alert("unknown mode: " + mode);
+				return;
+			}
+		});
+	});
+
+	function doClose(){
+		ctx = initialCtx();
+		wrapper.style.display = "none";
+	}
+
+	document.body.addEventListener("presc-cancel", function(event){
+		doClose();
+	});
+	document.body.addEventListener("presc-done", function(event){
+		doClose();
+	});
+
+/***/ },
+/* 134 */
+/***/ function(module, exports) {
+
+	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n</div>"
+
+/***/ },
+/* 135 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<div class=\"visit-date\">{{dateRep}}</div>\r\n\t\t<table width=\"100%\">\r\n\t\t\t<tr style=\"vertical-align: top\">\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#texts}}\r\n\t\t\t\t\t\t<div>{{& .}}</div>\r\n\t\t\t\t\t{{/texts}}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#drugs}}\r\n\t\t\t\t\t\t<div>{{.}}</div>\r\n\t\t\t\t\t{{/drugs}}\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t</div>\r\n{{/list}}"
+
+/***/ },
+/* 136 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}"
+
+/***/ },
+/* 137 */
+/***/ function(module, exports) {
+
+	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n{{#requirePaging}}\r\n<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-last\">&raquo;</a>\r\n</div>\r\n{{/requirePaging}}\r\n"
+
+/***/ },
+/* 138 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var task = __webpack_require__(1);
+	var service = __webpack_require__(6);
+	var kanjidate = __webpack_require__(9);
+	var hogan = __webpack_require__(3);
+	var util = __webpack_require__(118);
+	var patientInfoTmplSrc = __webpack_require__(139);
+	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
+	var visitsTmplSrc = __webpack_require__(140);
+	var visitsTmpl = hogan.compile(visitsTmplSrc);
+	var drugsTmplSrc = __webpack_require__(141);
+	var drugsTmpl = hogan.compile(drugsTmplSrc);
+
+	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
+		var text = event.target.querySelector("input[type=text]").value;
+		if( !text.match(/^\d+$/) ){
+			alert("患者番号が適切でありません。");
+			return;
+		}
+		var patientId = +text;
+		fetchData(patientId, function(err, data){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderPatient(data.patient);
+			renderVisits(data.visits);
+		})
+	});
+
+	function renderPatient(patient){
+		var html = patientInfoTmpl.render(patient);
+		document.getElementById("previous-techou-patient").innerHTML = html;
+	}
+
+	function renderVisits(visits){
+		var list = visits.map(function(visit){
+			return {
+				visit_id: visit.visit_id,
+				label: kanjidate.format(kanjidate.f1, visit.v_datetime)
+			};
+		});
+		var html = visitsTmpl.render({list: list});
+		document.getElementById("previous-techou-visits").innerHTML = html;
+	}
+
+	function fetchData(patientId, cb){
+		var patient, visits;
+		task.run([
+			function(done){
+				service.getPatient(patientId, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					patient = result;
+					done();
+				})
+			},
+			function(done){
+				service.listVisits(patientId, 0, 10, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					visits = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				cb(err);
+				return;
+			}
+			cb(undefined, {
+				patient: patient,
+				visits: visits
+			});
+		});
+	}
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "A" && target.hasAttribute("data-visit-id") ){
+			var nextElement = util.nextElementSibling(target);
+			if( nextElement !== null && nextElement.getAttribute("data-kind") === "prev-techou-drugs" ){
+				nextElement.parentNode.removeChild(nextElement);
+				return;
+			}
+			var visitId = target.getAttribute("data-visit-id");
+			var drugs;
+			task.run([
+				function(done){
+					service.listFullDrugs(visitId, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						drugs = result;
+						done();
+					})
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				var index = 1;
+				var list = drugs.map(function(drug){
+					return {
+						label: util.drugRep(drug),
+					}
+				});
+				var html = drugsTmpl.render({list: list, visit_id: visitId});
+				var dom = document.createElement("div");
+				dom.setAttribute("data-kind", "prev-techou-drugs");
+				dom.innerHTML = html;
+				util.insertAfter(event.target, dom);
+			})
+		}
+	});
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("print-prev-techou-button") ){
+			var visitId = target.getAttribute("data-visit-id");
+			window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
+		}
+	});
+
+	function doClear(){
+		var wrapper = document.getElementById("previous-techou-wrapper");
+		wrapper.querySelector("form.search-form input[type=text]").value = "";
+		document.getElementById("previous-techou-patient").innerHTML = "";
+		document.getElementById("previous-techou-visits").innerHTML = "";
+	}
+
+	document.getElementById("previous-techou-patient").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("end-button") ){
+			doClear();
+		}
+	});
+
+/***/ },
+/* 139 */
+/***/ function(module, exports) {
+
+	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
+
+/***/ },
+/* 140 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
+
+/***/ },
+/* 141 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
+
+/***/ },
+/* 142 */
+/***/ function(module, exports) {
+
+	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
 
 /***/ }
 /******/ ]);

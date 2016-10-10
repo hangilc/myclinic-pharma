@@ -109,7 +109,8 @@ document.body.addEventListener("presc-cancel", function(event){
 });
 
 document.body.addEventListener("presc-done", function(event){
-	document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+	//document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
+	doRefresh();
 });
 
 var prescPrinterSettingKey = "pharma:presc-printer-setting";
