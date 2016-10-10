@@ -12,6 +12,7 @@ var packagingPatientTmplSrc = require("raw!./packaging-patient.html");
 var packagingPatientTmpl = hogan.compile(packagingPatientTmplSrc);
 var drugListTmplSrc = require("raw!./drug-list.html");
 var drugListTmpl = hogan.compile(drugListTmplSrc);
+var printUtil = require("./print-util");
 
 var ctx = {
 	currentVisitId: 0
@@ -159,6 +160,35 @@ document.body.addEventListener("presc-done", function(event){
 	doClose();
 });
 
+document.getElementById("print-all-button").addEventListener("click", function(event){
+	var visitId = ctx.currentVisitId;
+	var prescData;
+	task.run([
+		function(done){
+			util.fetchPrescData(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				prescData = result;
+				done();
+			});
+		},
+		function(done){
+			var prescOps = util.composePrescOps(prescData);
+			printUtil.print([prescOps], undefined, done);
+		},
+		function(done){
+			var prescOps = util.composeTechouOps(prescData);
+			printUtil.print([prescOps], undefined, done);
+		}
+	], function(err){
+		if( err ){
+			alert(err);
+			return;
+		}
+	});
+});
 
 
 

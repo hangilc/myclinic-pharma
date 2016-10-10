@@ -2,6 +2,9 @@
 
 var mConsts = require("myclinic-consts");
 var conti = require("conti");
+var service = require("./pharma-service");
+var PrescContent = require("myclinic-drawer-forms").PrescContent;
+var kanjidate = require("kanjidate");
 
 exports.drugRep = function(drug){
 	var category = parseInt(drug.d_category, 10);
@@ -80,3 +83,75 @@ exports.nextElementSibling = function(node){
 	return null;
 };
 
+exports.fetchPrescData = function(visitId, cb){
+	var visit, patient, drugs, config;
+	conti.exec([
+		function(done){
+			service.getVisit(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				visit = result;
+				done();
+			})
+		},
+		function(done){
+			service.getPatient(visit.patient_id, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				patient = result;
+				done();
+			})
+		},
+		function(done){
+			service.listFullDrugs(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				drugs = result;
+				done();
+			})
+		},
+		function(done){
+			exports.request("config", {}, "GET", 3000, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				config = result;
+				done();
+			})
+		}
+	], function(err){
+		if( err ){
+			cb(err);
+			return;
+		}
+		var data = {
+            name: patient.last_name + " " + patient.first_name,
+			at: kanjidate.format(kanjidate.f2, visit.v_datetime),
+			drugs: drugs.map(function(drug){
+				return exports.drugRep(drug);
+			}),
+			clinic: config.presc.clinic
+		}
+		cb(undefined, data);
+	})
+};
+
+exports.composePrescOps = function(data){
+	return PrescContent.getOps(data, {});
+};
+
+exports.composeTechouOps = function(data){
+	var option = {
+		fontSize: 3.2,
+		inset: 4,
+		width: 99
+	};
+	return PrescContent.getOps(data, option);
+};

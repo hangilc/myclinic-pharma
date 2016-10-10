@@ -67,7 +67,6 @@ function startAllDrugs(visitId){
 			alert(err);
 			return;
 		}
-		console.log(ctx, drugBagData);
 		bindPageNav(ctx);
 		navPageUpdate(ctx);
 		document.getElementById("page-nav-wrapper").style.display = "block";
@@ -448,62 +447,6 @@ function makeDrugBagOps(fullDrug, visit, patient, pharmaDrug){
 	var ops = compiler.getOps();
 	return ops;
 }
-
-// function previewDrug(drugId){
-// 	var drug, visit, patient, pharmaDrug;
-// 	task.run([
-// 		function(done){
-// 			service.getFullDrug(drugId, function(err, result){
-// 				if( err ){
-// 					done(err);
-// 					return;
-// 				}
-// 				drug = result;
-// 				done();
-// 			})
-// 		},
-// 		function(done){
-// 			service.getVisit(drug.visit_id, function(err, result){
-// 				if( err ){
-// 					done(err);
-// 					return;
-// 				}
-// 				visit = result;
-// 				done();
-// 			})
-// 		},
-// 		function(done){
-// 			service.getPatient(visit.patient_id, function(err, result){
-// 				if( err ){
-// 					done(err);
-// 					return;
-// 				}
-// 				patient = result;
-// 				done();
-// 			})
-// 		},
-// 		function(done){
-// 			service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
-// 				if( err ){
-// 					done(err);
-// 					return;
-// 				}
-// 				pharmaDrug = result;
-// 				done();
-// 			})
-// 		}
-// 	], function(err){
-// 		if( err ){
-// 			cb(err);
-// 			return;
-// 		}
-// 		var data = DrugBagData.createData(drug, visit, patient, pharmaDrug);
-// 		var compiler = new DrugBag(data);
-// 		var ops = compiler.getOps();
-// 		renderDrugBag(ops);
-// 		bindPrintButtonSingle(ops);
-// 	})
-// }
 
 function startBlank(kind){
 	var compiler = new DrugBag({
