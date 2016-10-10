@@ -7,7 +7,7 @@ var DrugBag = require("myclinic-drawer-forms").DrugBag;
 var DrawerCompiler = require("myclinic-drawer").Compiler;
 var kanjidate = require("kanjidate");
 
-exports.createData = function(drug, visit, patient, pharmaDrug){
+exports.createData = function(drug, visit, patient, pharmaDrug, clinicName, clinicAddr){
 	return {
 		kind: drugCategoryToSlug(drug.d_category),
 		instructions: composeInstructions(drug.d_category, 
@@ -16,7 +16,9 @@ exports.createData = function(drug, visit, patient, pharmaDrug){
 		patient_name: patient.last_name + " " + patient.first_name,
 		patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
 		desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : "",
-		prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime)
+		prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime),
+		clinic_name: clinicName,
+		clinic_address: clinicAddr
 	};
 }
 

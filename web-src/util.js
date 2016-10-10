@@ -5,6 +5,8 @@ var conti = require("conti");
 var service = require("./pharma-service");
 var PrescContent = require("myclinic-drawer-forms").PrescContent;
 var kanjidate = require("kanjidate");
+var DrugBagData = require("./drugbag-data");
+var DrugBag = require("myclinic-drawer-forms").DrugBag;
 
 exports.drugRep = function(drug){
 	var category = parseInt(drug.d_category, 10);
@@ -81,6 +83,81 @@ exports.nextElementSibling = function(node){
 		nextSib = nextSib.nextSibling;
 	}
 	return null;
+};
+
+exports.fetchAllDrugsData = function(visitId, cb){
+	var visit, patient, drugs, config;
+	conti.exec([
+		function(done){
+			service.getVisit(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				visit = result;
+				done();
+			});
+		},
+		function(done){
+			service.getPatient(visit.patient_id, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				patient = result;
+				done();
+			})
+		},
+		function(done){
+			service.listFullDrugs(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				drugs = result;
+				done();
+			});
+		},
+		function(done){
+			conti.forEach(drugs, function(drug, done){
+				service.findPharmaDrug(drug.d_iyakuhincode, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					drug.pharmaDrug = result;
+					done();
+				})
+			}, done);
+		},
+		function(done){
+			exports.request("config", {}, "GET", 3000, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				config = result;
+				done();
+			})
+		}
+	], function(err){
+		if( err ){
+			cb(err);
+			return;
+		}
+		console.log("config", config);
+		var data = drugs.map(function(drug){
+			return DrugBagData.createData(drug, visit, patient, drug.pharmaDrug, 
+					config.drugbag.clinic_name, config.drugbag.clinic_address);
+		});
+		cb(undefined, data);
+	});
+};
+
+exports.composeDrugBagOps = function(data){
+	console.log(data);
+	var compiler = new DrugBag(data);
+	return compiler.getOps();
 };
 
 exports.fetchPrescData = function(visitId, cb){

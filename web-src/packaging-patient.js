@@ -162,7 +162,7 @@ document.body.addEventListener("presc-done", function(event){
 
 document.getElementById("print-all-button").addEventListener("click", function(event){
 	var visitId = ctx.currentVisitId;
-	var prescData;
+	var prescData, drugsData;
 	task.run([
 		function(done){
 			util.fetchPrescData(visitId, function(err, result){
@@ -175,8 +175,25 @@ document.getElementById("print-all-button").addEventListener("click", function(e
 			});
 		},
 		function(done){
+			util.fetchAllDrugsData(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				drugsData = result;
+				console.log("drugsData", drugsData);
+				done();
+			});
+		},
+		function(done){
 			var prescOps = util.composePrescOps(prescData);
 			printUtil.print([prescOps], undefined, done);
+		},
+		function(done){
+			var pages = drugsData.map(function(data){
+				return util.composeDrugBagOps(data);
+			});
+			printUtil.print(pages, undefined, done);
 		},
 		function(done){
 			var prescOps = util.composeTechouOps(prescData);

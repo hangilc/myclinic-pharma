@@ -311,7 +311,7 @@
 				})
 			},
 			function(done){
-				service.listFullDrugs(visit.visit_id, visit.v_datetime, function(err, result){
+				service.listFullDrugs(visit.visit_id, function(err, result){
 					if( err ){
 						done(err);
 						return;
