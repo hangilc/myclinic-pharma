@@ -76,7 +76,7 @@ exports.countVisitsByIyakuhincode = function(patientId, iyakuhincode, cb){
 };
 
 exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
-	service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count);
+	service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count, cb);
 };
 
 exports.getFullDrug = function(drugId, at, cb){

@@ -1,10 +1,11 @@
 <div>{{name}} <button class="by-drug-goto-list">薬剤一覧へ</button></div>
-{{#requirePaging}}
 <div>
+{{#requirePaging}}
 	<span class="visits-nav-current">{{current}}</span> / {{total}} 
-	<a href="javascript:void(0)" class="by-drug-selected-first">&laquo;</a>
-	<a href="javascript:void(0)" class="by-drug-selected-prev">&lt;</a>
-	<a href="javascript:void(0)" class="by-drug-selected-next">&gt;</a>
-	<a href="javascript:void(0)" class="by-drug-selected-last">&raquo;</a>
-</div>
+	<a href="javascript:void(0)" class="visits-nav-first">&laquo;</a>
+	<a href="javascript:void(0)" class="visits-nav-prev">&lt;</a>
+	<a href="javascript:void(0)" class="visits-nav-next">&gt;</a>
+	<a href="javascript:void(0)" class="visits-nav-last">&raquo;</a>
 {{/requirePaging}}
+({{patient.last_name}} {{patient.first_name}})
+</div>

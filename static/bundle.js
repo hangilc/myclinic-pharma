@@ -155,7 +155,6 @@
 	});
 
 	document.body.addEventListener("presc-done", function(event){
-		//document.getElementById("patient-list").querySelector(".selected").classList.remove("selected");
 		doRefresh();
 	});
 
@@ -1368,7 +1367,7 @@
 	};
 
 	exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
-		service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count);
+		service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count, cb);
 	};
 
 	exports.getFullDrug = function(drugId, at, cb){
@@ -1691,6 +1690,7 @@
 		done();
 	};
 	*/
+
 
 /***/ },
 /* 7 */
@@ -19780,7 +19780,7 @@
 /* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	/* WEBPACK VAR INJECTION */(function(setImmediate) {"use strict";
 
 	var task = __webpack_require__(1);
 	var service = __webpack_require__(6);
@@ -19795,18 +19795,33 @@
 	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
 	var submenuByDrugSelectedTmplSrc = __webpack_require__(137);
 	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
+	var conti = __webpack_require__(2);
+
+	// Elements ////////////////////////////////////////////////////////////////////////
 
 	var wrapper = document.getElementById("aux-info");
 	var submenu = document.getElementById("control-box-submenu");
 	var visitsBox = document.getElementById("visits-box");
 
-	var ctx = initialCtx();
+	// Helpers /////////////////////////////////////////////////////////////////////////
+
+	function calcNumberOfPages(total, perPage){
+		return Math.floor((total + perPage - 1) / perPage);
+	}
+
+	function currentSelectMode(){
+		return wrapper.querySelector(".control-box input[type=radio][name=mode]:checked").value;
+	}
+
+	// Model ///////////////////////////////////////////////////////////////////////////
+
+	var ctx;
 	var visitsPerPage = 5;
 
 	function initialCtx(){
 		return {
-			visitId: 0,
-			patientId: 0,
+			visit: null,
+			patient: null,
 			byDate: {
 				current: 0,
 				nPages: 0
@@ -19817,10 +19832,443 @@
 				currentIyakuhincode: 0,
 				currentPage: 1,
 				nPages: 0
-			}
+			},
+			dispVisits: []
 		};
 	}
 
+	var model = {
+		reset: function(visitId, done){
+			ctx = initialCtx();
+			ctx.visitId = visitId;
+			conti.exec([
+				model.loadVisit.bind(null, visitId),
+				model.loadPatient,
+				model.calcVisitsByDate,
+				model.loadDispVisitsByDate
+			], done);
+		},
+		loadVisit: function(visitId, done){
+			service.getVisit(visitId, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				ctx.visit = result;
+				done();
+			});
+		},
+		loadPatient: function(done){
+			service.getPatient(ctx.visit.patient_id, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				ctx.patient = result;
+				done();
+			});
+		},
+		calcVisitsByDate: function(done){
+			service.calcVisits(ctx.visit.patient_id, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				var nVisits = result;
+				var nPages = calcNumberOfPages(nVisits, visitsPerPage);
+				ctx.byDate.nPages = nPages;
+				var current;
+				if( nPages === 0 ){
+					current = 0;
+				} else {
+					current = 1;
+				}
+				ctx.byDate.current = current;
+				done();
+			});
+		},
+		calcVisitsByDrug: function(done){
+			var iyakuhincode = ctx.byDrug.currentIyakuhincode;
+			service.countVisitsByIyakuhincode(ctx.visit.patient_id, iyakuhincode, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				ctx.byDrug.nPages = calcNumberOfPages(result, visitsPerPage);
+				ctx.byDrug.currentPage = 1;
+				done();
+			});
+		},
+		loadDispVisitsByDate: function(done){
+			if( ctx.byDate.current <= 0 ){
+				ctx.dispVisits == [];
+				done();
+				return;
+			}
+			service.listFullVisits(ctx.visit.patient_id, (ctx.byDate.current-1)*visitsPerPage, 
+					visitsPerPage, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				ctx.dispVisits = result;
+				done();
+			})
+		},
+		loadDispVisitsByDrug: function(done){
+			if( ctx.byDrug.currentIyakuhincode > 0 ){
+				var offset = (ctx.byDrug.currentPage - 1) * visitsPerPage;
+				if( offset < 0 ){
+					done("cannot happen in loadDispVisitsByDrug");
+					return;
+				}
+				service.listFullVisitsByIyakuhincode(ctx.visit.patient_id, ctx.byDrug.currentIyakuhincode, 
+					offset, visitsPerPage, function(err, result){
+						if( err ){
+							ctx.dispVisits = [];
+							done(err);
+							return;
+						}
+						ctx.dispVisits = result;
+						done();
+				});
+			} else {
+				ctx.dispVisits = [];
+				setImmediate(done);
+			}
+		},
+		ensureDrugs: function(done){
+			if( ctx.byDrug.drugs === null ){
+				model.loadDrugs(done);
+			} else {
+				setImmediate(done);
+			}
+		},
+		loadDrugs: function(done){
+			service.listIyakuhinByPatient(ctx.visit.patient_id, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				ctx.byDrug.drugs = result;
+				done();
+			});
+		}
+	};
+
+	// View ////////////////////////////////////////////////////////////////////////////
+
+	var view = {
+		show: function(){
+			wrapper.style.display = "block";
+		},
+		hide: function(){
+			wrapper.style.display = "hide";
+		},
+		checkByDate: function(){
+			wrapper.querySelector("input[type=radio][name=mode][value=by-date]").checked = true;
+		},
+		renderSubmenuByDate: function(){
+			if( ctx.byDate.nPages > 1 ){
+				var html = visitsNavTmpl.render({
+					patient: ctx.patient,
+					current: ctx.byDate.current,
+					total: ctx.byDate.nPages
+				})
+				submenu.innerHTML = html;
+			} else {
+				submenu.innerHTML = "";
+			}
+		},
+		renderSubmenuByDrug: function(){
+			var html;
+			if( !ctx.byDrug.currentName ){
+				html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
+			} else {
+				html = submenuByDrugSelectedTmpl.render({
+					patient: ctx.patient,
+					name: ctx.byDrug.currentName,
+					current: ctx.byDrug.currentPage,
+					total: ctx.byDrug.nPages,
+					requirePaging: ctx.byDrug.nPages > 1
+				});
+			}
+			submenu.innerHTML = html;
+		},
+		renderVisits: function(){
+			var list = ctx.dispVisits.map(function(visit){
+				var index = 1;
+				return {
+					dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
+					texts: visit.texts.map(function(text){
+						return text.content.replace(/\n/g, "<br />\n")
+					}),
+					drugs: visit.drugs.map(function(drug){
+						return (index++) + ") " + util.drugRep(drug);
+					})
+				};
+			});
+			var html = visitsBoxTmpl.render({list: list});
+			visitsBox.innerHTML = html;
+		}
+	};
+
+	// Action //////////////////////////////////////////////////////////////////////////
+
+	var action = {
+		reset: function(visitId){
+			task.run([
+				function(done){
+					model.reset(visitId, done);
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.checkByDate();
+				view.renderSubmenuByDate();
+				view.renderVisits();
+				view.show();
+			});
+		},
+		firstPageByDate: function(){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current = 1;
+				task.run([
+					model.loadDispVisitsByDate
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDate();
+					view.renderVisits();
+				});
+			}
+		},
+		prevPageByDate: function(){
+			if( ctx.byDate.current > 1 ){
+				ctx.byDate.current -= 1;
+				task.run([
+					model.loadDispVisitsByDate
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDate();
+					view.renderVisits();
+				});
+			}
+		},
+		nextPageByDate: function(){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current += 1;
+				task.run([
+					model.loadDispVisitsByDate
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDate();
+					view.renderVisits();
+				});
+			}
+		},
+		lastPageByDate: function(){
+			if( ctx.byDate.current < ctx.byDate.nPages ){
+				ctx.byDate.current = ctx.byDate.nPages;
+				task.run([
+					model.loadDispVisitsByDate
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDate();
+					view.renderVisits();
+				});
+			}
+		},
+		firstPageByDrug: function(){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage = 1;
+				task.run([
+					model.loadDispVisitsByDrug
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDrug();
+					view.renderVisits();
+				});
+			}
+		},
+		prevPageByDrug: function(){
+			if( ctx.byDrug.currentPage > 1 ){
+				ctx.byDrug.currentPage -= 1;
+				task.run([
+					model.loadDispVisitsByDrug
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDrug();
+					view.renderVisits();
+				});
+			}
+		},
+		nextPageByDrug: function(){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage += 1;
+				task.run([
+					model.loadDispVisitsByDrug
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDrug();
+					view.renderVisits();
+				});
+			}
+		},
+		lastPageByDrug: function(){
+			if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+				ctx.byDrug.currentPage = ctx.byDrug.nPages;
+				task.run([
+					model.loadDispVisitsByDrug
+				], function(err){
+					if( err ){
+						alert(err);
+						return;
+					}
+					view.renderSubmenuByDrug();
+					view.renderVisits();
+				});
+			}
+		},
+		switchToByDate: function(){
+			task.run([
+				model.loadDispVisitsByDate
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDate();
+				view.renderVisits();
+			});	
+		},
+		switchToByDrug: function(){
+			task.run([
+				model.ensureDrugs,
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});	
+		},
+		selectIyakuhin: function(iyakuhincode, name){
+			ctx.byDrug.currentName = name;
+			ctx.byDrug.currentIyakuhincode = iyakuhincode;
+			task.run([
+				model.calcVisitsByDrug,
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});
+		}
+	};
+
+	// Binding /////////////////////////////////////////////////////////////////////////
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-first") ){
+			var mode = currentSelectMode();
+			if( mode === "by-date" ){
+				action.firstPageByDate();
+			} else if( mode === "by-drug" ){
+				action.firstPageByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-prev") ){
+			var mode = currentSelectMode();
+			if( mode === "by-date" ){
+				action.prevPageByDate();
+			} else if( mode === "by-drug" ){
+				action.prevPageByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-next") ){
+			var mode = currentSelectMode();
+			if( mode === "by-date" ){
+				action.nextPageByDate();
+			} else if( mode === "by-drug" ){
+				action.nextPageByDrug();
+			}
+		}
+	})
+
+	wrapper.addEventListener("click", function(event){
+		if( event.target.classList.contains("visits-nav-last") ){
+			var mode = currentSelectMode();
+			if( mode === "by-date" ){
+				action.lastPageByDate();
+			} else if( mode === "by-drug" ){
+				action.lastPageByDrug();
+			}
+		}
+	})
+
+	wrapper.querySelectorAll("input[name=mode]").forEach(function(e){
+		e.addEventListener("click", function(event){
+			var mode = event.target.value;
+			if( mode === "by-date" ){
+				action.switchToByDate();
+			} else if( mode === "by-drug" ){
+				action.switchToByDrug();
+			} else {
+				alert("unknown mode: " + mode);
+			}
+		});
+	});
+
+	submenu.addEventListener("click", function(event){
+		if( event.target.classList.contains("by-drug-item") ){
+			var target = event.target;
+			var iyakuhincode = +target.getAttribute("data-iyakuhincode");
+			var name = target.innerText.trim();
+			action.selectIyakuhin(iyakuhincode, name);
+		}
+	});
+
+	// Exports /////////////////////////////////////////////////////////////////////////
+
+	exports.open = function(visitId){
+		action.reset(visitId);
+	};
+
+	/**
 	exports.open = function(visitId){
 		ctx = initialCtx();
 		openByDate(visitId);
@@ -20186,12 +20634,16 @@
 	document.body.addEventListener("presc-done", function(event){
 		doClose();
 	});
+	**/
+
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(143).setImmediate))
 
 /***/ },
 /* 134 */
 /***/ function(module, exports) {
 
-	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n</div>"
+	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n\t({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
 
 /***/ },
 /* 135 */
@@ -20209,7 +20661,7 @@
 /* 137 */
 /***/ function(module, exports) {
 
-	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n{{#requirePaging}}\r\n<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"by-drug-selected-last\">&raquo;</a>\r\n</div>\r\n{{/requirePaging}}\r\n"
+	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n<div>\r\n{{#requirePaging}}\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n{{/requirePaging}}\r\n({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
 
 /***/ },
 /* 138 */
@@ -20383,6 +20835,274 @@
 /***/ function(module, exports) {
 
 	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
+
+/***/ },
+/* 143 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(144).nextTick;
+	var apply = Function.prototype.apply;
+	var slice = Array.prototype.slice;
+	var immediateIds = {};
+	var nextImmediateId = 0;
+
+	// DOM APIs, for completeness
+
+	exports.setTimeout = function() {
+	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+	};
+	exports.setInterval = function() {
+	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+	};
+	exports.clearTimeout =
+	exports.clearInterval = function(timeout) { timeout.close(); };
+
+	function Timeout(id, clearFn) {
+	  this._id = id;
+	  this._clearFn = clearFn;
+	}
+	Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+	Timeout.prototype.close = function() {
+	  this._clearFn.call(window, this._id);
+	};
+
+	// Does not start the time, just sets up the members needed.
+	exports.enroll = function(item, msecs) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = msecs;
+	};
+
+	exports.unenroll = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = -1;
+	};
+
+	exports._unrefActive = exports.active = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+
+	  var msecs = item._idleTimeout;
+	  if (msecs >= 0) {
+	    item._idleTimeoutId = setTimeout(function onTimeout() {
+	      if (item._onTimeout)
+	        item._onTimeout();
+	    }, msecs);
+	  }
+	};
+
+	// That's not how node.js implements it but the exposed api is the same.
+	exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+	  var id = nextImmediateId++;
+	  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+
+	  immediateIds[id] = true;
+
+	  nextTick(function onNextTick() {
+	    if (immediateIds[id]) {
+	      // fn.call() is faster so we optimize for the common use-case
+	      // @see http://jsperf.com/call-apply-segu
+	      if (args) {
+	        fn.apply(null, args);
+	      } else {
+	        fn.call(null);
+	      }
+	      // Prevent ids from leaking
+	      exports.clearImmediate(id);
+	    }
+	  });
+
+	  return id;
+	};
+
+	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+	  delete immediateIds[id];
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(143).setImmediate, __webpack_require__(143).clearImmediate))
+
+/***/ },
+/* 144 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
 
 /***/ }
 /******/ ]);

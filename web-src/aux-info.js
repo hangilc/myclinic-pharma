@@ -13,18 +13,33 @@ var submenuByDrugTmplSrc = require("raw!./submenu-by-drug.html");
 var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
 var submenuByDrugSelectedTmplSrc = require("raw!./submenu-by-drug-selected.html");
 var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
+var conti = require("conti");
+
+// Elements ////////////////////////////////////////////////////////////////////////
 
 var wrapper = document.getElementById("aux-info");
 var submenu = document.getElementById("control-box-submenu");
 var visitsBox = document.getElementById("visits-box");
 
-var ctx = initialCtx();
+// Helpers /////////////////////////////////////////////////////////////////////////
+
+function calcNumberOfPages(total, perPage){
+	return Math.floor((total + perPage - 1) / perPage);
+}
+
+function currentSelectMode(){
+	return wrapper.querySelector(".control-box input[type=radio][name=mode]:checked").value;
+}
+
+// Model ///////////////////////////////////////////////////////////////////////////
+
+var ctx;
 var visitsPerPage = 5;
 
 function initialCtx(){
 	return {
-		visitId: 0,
-		patientId: 0,
+		visit: null,
+		patient: null,
 		byDate: {
 			current: 0,
 			nPages: 0
@@ -35,10 +50,443 @@ function initialCtx(){
 			currentIyakuhincode: 0,
 			currentPage: 1,
 			nPages: 0
-		}
+		},
+		dispVisits: []
 	};
 }
 
+var model = {
+	reset: function(visitId, done){
+		ctx = initialCtx();
+		ctx.visitId = visitId;
+		conti.exec([
+			model.loadVisit.bind(null, visitId),
+			model.loadPatient,
+			model.calcVisitsByDate,
+			model.loadDispVisitsByDate
+		], done);
+	},
+	loadVisit: function(visitId, done){
+		service.getVisit(visitId, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			ctx.visit = result;
+			done();
+		});
+	},
+	loadPatient: function(done){
+		service.getPatient(ctx.visit.patient_id, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			ctx.patient = result;
+			done();
+		});
+	},
+	calcVisitsByDate: function(done){
+		service.calcVisits(ctx.visit.patient_id, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			var nVisits = result;
+			var nPages = calcNumberOfPages(nVisits, visitsPerPage);
+			ctx.byDate.nPages = nPages;
+			var current;
+			if( nPages === 0 ){
+				current = 0;
+			} else {
+				current = 1;
+			}
+			ctx.byDate.current = current;
+			done();
+		});
+	},
+	calcVisitsByDrug: function(done){
+		var iyakuhincode = ctx.byDrug.currentIyakuhincode;
+		service.countVisitsByIyakuhincode(ctx.visit.patient_id, iyakuhincode, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			ctx.byDrug.nPages = calcNumberOfPages(result, visitsPerPage);
+			ctx.byDrug.currentPage = 1;
+			done();
+		});
+	},
+	loadDispVisitsByDate: function(done){
+		if( ctx.byDate.current <= 0 ){
+			ctx.dispVisits == [];
+			done();
+			return;
+		}
+		service.listFullVisits(ctx.visit.patient_id, (ctx.byDate.current-1)*visitsPerPage, 
+				visitsPerPage, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			ctx.dispVisits = result;
+			done();
+		})
+	},
+	loadDispVisitsByDrug: function(done){
+		if( ctx.byDrug.currentIyakuhincode > 0 ){
+			var offset = (ctx.byDrug.currentPage - 1) * visitsPerPage;
+			if( offset < 0 ){
+				done("cannot happen in loadDispVisitsByDrug");
+				return;
+			}
+			service.listFullVisitsByIyakuhincode(ctx.visit.patient_id, ctx.byDrug.currentIyakuhincode, 
+				offset, visitsPerPage, function(err, result){
+					if( err ){
+						ctx.dispVisits = [];
+						done(err);
+						return;
+					}
+					ctx.dispVisits = result;
+					done();
+			});
+		} else {
+			ctx.dispVisits = [];
+			setImmediate(done);
+		}
+	},
+	ensureDrugs: function(done){
+		if( ctx.byDrug.drugs === null ){
+			model.loadDrugs(done);
+		} else {
+			setImmediate(done);
+		}
+	},
+	loadDrugs: function(done){
+		service.listIyakuhinByPatient(ctx.visit.patient_id, function(err, result){
+			if( err ){
+				done(err);
+				return;
+			}
+			ctx.byDrug.drugs = result;
+			done();
+		});
+	}
+};
+
+// View ////////////////////////////////////////////////////////////////////////////
+
+var view = {
+	show: function(){
+		wrapper.style.display = "block";
+	},
+	hide: function(){
+		wrapper.style.display = "hide";
+	},
+	checkByDate: function(){
+		wrapper.querySelector("input[type=radio][name=mode][value=by-date]").checked = true;
+	},
+	renderSubmenuByDate: function(){
+		if( ctx.byDate.nPages > 1 ){
+			var html = visitsNavTmpl.render({
+				patient: ctx.patient,
+				current: ctx.byDate.current,
+				total: ctx.byDate.nPages
+			})
+			submenu.innerHTML = html;
+		} else {
+			submenu.innerHTML = "";
+		}
+	},
+	renderSubmenuByDrug: function(){
+		var html;
+		if( !ctx.byDrug.currentName ){
+			html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
+		} else {
+			html = submenuByDrugSelectedTmpl.render({
+				patient: ctx.patient,
+				name: ctx.byDrug.currentName,
+				current: ctx.byDrug.currentPage,
+				total: ctx.byDrug.nPages,
+				requirePaging: ctx.byDrug.nPages > 1
+			});
+		}
+		submenu.innerHTML = html;
+	},
+	renderVisits: function(){
+		var list = ctx.dispVisits.map(function(visit){
+			var index = 1;
+			return {
+				dateRep: kanjidate.format(kanjidate.f4, visit.v_datetime),
+				texts: visit.texts.map(function(text){
+					return text.content.replace(/\n/g, "<br />\n")
+				}),
+				drugs: visit.drugs.map(function(drug){
+					return (index++) + ") " + util.drugRep(drug);
+				})
+			};
+		});
+		var html = visitsBoxTmpl.render({list: list});
+		visitsBox.innerHTML = html;
+	}
+};
+
+// Action //////////////////////////////////////////////////////////////////////////
+
+var action = {
+	reset: function(visitId){
+		task.run([
+			function(done){
+				model.reset(visitId, done);
+			}
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			view.checkByDate();
+			view.renderSubmenuByDate();
+			view.renderVisits();
+			view.show();
+		});
+	},
+	firstPageByDate: function(){
+		if( ctx.byDate.current > 1 ){
+			ctx.byDate.current = 1;
+			task.run([
+				model.loadDispVisitsByDate
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDate();
+				view.renderVisits();
+			});
+		}
+	},
+	prevPageByDate: function(){
+		if( ctx.byDate.current > 1 ){
+			ctx.byDate.current -= 1;
+			task.run([
+				model.loadDispVisitsByDate
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDate();
+				view.renderVisits();
+			});
+		}
+	},
+	nextPageByDate: function(){
+		if( ctx.byDate.current < ctx.byDate.nPages ){
+			ctx.byDate.current += 1;
+			task.run([
+				model.loadDispVisitsByDate
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDate();
+				view.renderVisits();
+			});
+		}
+	},
+	lastPageByDate: function(){
+		if( ctx.byDate.current < ctx.byDate.nPages ){
+			ctx.byDate.current = ctx.byDate.nPages;
+			task.run([
+				model.loadDispVisitsByDate
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDate();
+				view.renderVisits();
+			});
+		}
+	},
+	firstPageByDrug: function(){
+		if( ctx.byDrug.currentPage > 1 ){
+			ctx.byDrug.currentPage = 1;
+			task.run([
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});
+		}
+	},
+	prevPageByDrug: function(){
+		if( ctx.byDrug.currentPage > 1 ){
+			ctx.byDrug.currentPage -= 1;
+			task.run([
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});
+		}
+	},
+	nextPageByDrug: function(){
+		if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+			ctx.byDrug.currentPage += 1;
+			task.run([
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});
+		}
+	},
+	lastPageByDrug: function(){
+		if( ctx.byDrug.currentPage < ctx.byDrug.nPages ){
+			ctx.byDrug.currentPage = ctx.byDrug.nPages;
+			task.run([
+				model.loadDispVisitsByDrug
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				view.renderSubmenuByDrug();
+				view.renderVisits();
+			});
+		}
+	},
+	switchToByDate: function(){
+		task.run([
+			model.loadDispVisitsByDate
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			view.renderSubmenuByDate();
+			view.renderVisits();
+		});	
+	},
+	switchToByDrug: function(){
+		task.run([
+			model.ensureDrugs,
+			model.loadDispVisitsByDrug
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			view.renderSubmenuByDrug();
+			view.renderVisits();
+		});	
+	},
+	selectIyakuhin: function(iyakuhincode, name){
+		ctx.byDrug.currentName = name;
+		ctx.byDrug.currentIyakuhincode = iyakuhincode;
+		task.run([
+			model.calcVisitsByDrug,
+			model.loadDispVisitsByDrug
+		], function(err){
+			if( err ){
+				alert(err);
+				return;
+			}
+			view.renderSubmenuByDrug();
+			view.renderVisits();
+		});
+	}
+};
+
+// Binding /////////////////////////////////////////////////////////////////////////
+
+wrapper.addEventListener("click", function(event){
+	if( event.target.classList.contains("visits-nav-first") ){
+		var mode = currentSelectMode();
+		if( mode === "by-date" ){
+			action.firstPageByDate();
+		} else if( mode === "by-drug" ){
+			action.firstPageByDrug();
+		}
+	}
+})
+
+wrapper.addEventListener("click", function(event){
+	if( event.target.classList.contains("visits-nav-prev") ){
+		var mode = currentSelectMode();
+		if( mode === "by-date" ){
+			action.prevPageByDate();
+		} else if( mode === "by-drug" ){
+			action.prevPageByDrug();
+		}
+	}
+})
+
+wrapper.addEventListener("click", function(event){
+	if( event.target.classList.contains("visits-nav-next") ){
+		var mode = currentSelectMode();
+		if( mode === "by-date" ){
+			action.nextPageByDate();
+		} else if( mode === "by-drug" ){
+			action.nextPageByDrug();
+		}
+	}
+})
+
+wrapper.addEventListener("click", function(event){
+	if( event.target.classList.contains("visits-nav-last") ){
+		var mode = currentSelectMode();
+		if( mode === "by-date" ){
+			action.lastPageByDate();
+		} else if( mode === "by-drug" ){
+			action.lastPageByDrug();
+		}
+	}
+})
+
+wrapper.querySelectorAll("input[name=mode]").forEach(function(e){
+	e.addEventListener("click", function(event){
+		var mode = event.target.value;
+		if( mode === "by-date" ){
+			action.switchToByDate();
+		} else if( mode === "by-drug" ){
+			action.switchToByDrug();
+		} else {
+			alert("unknown mode: " + mode);
+		}
+	});
+});
+
+submenu.addEventListener("click", function(event){
+	if( event.target.classList.contains("by-drug-item") ){
+		var target = event.target;
+		var iyakuhincode = +target.getAttribute("data-iyakuhincode");
+		var name = target.innerText.trim();
+		action.selectIyakuhin(iyakuhincode, name);
+	}
+});
+
+// Exports /////////////////////////////////////////////////////////////////////////
+
+exports.open = function(visitId){
+	action.reset(visitId);
+};
+
+/**
 exports.open = function(visitId){
 	ctx = initialCtx();
 	openByDate(visitId);
@@ -404,3 +852,5 @@ document.body.addEventListener("presc-cancel", function(event){
 document.body.addEventListener("presc-done", function(event){
 	doClose();
 });
+**/
+
