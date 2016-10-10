@@ -201,7 +201,10 @@ var view = {
 	renderSubmenuByDrug: function(){
 		var html;
 		if( !ctx.byDrug.currentName ){
-			html = submenuByDrugTmpl.render({list: ctx.byDrug.drugs});
+			html = submenuByDrugTmpl.render({
+				patient: ctx.patient,
+				list: ctx.byDrug.drugs,
+			});
 		} else {
 			html = submenuByDrugSelectedTmpl.render({
 				patient: ctx.patient,
@@ -409,6 +412,13 @@ var action = {
 			view.renderSubmenuByDrug();
 			view.renderVisits();
 		});
+	},
+	unselectIyakuhin: function(){
+		ctx.byDrug.currentName = "";
+		ctx.byDrug.currentIyakuhincode = 0;
+		ctx.dispVisits = [];
+		view.renderSubmenuByDrug();
+		view.renderVisits();
 	}
 };
 
@@ -477,6 +487,12 @@ submenu.addEventListener("click", function(event){
 		var iyakuhincode = +target.getAttribute("data-iyakuhincode");
 		var name = target.innerText.trim();
 		action.selectIyakuhin(iyakuhincode, name);
+	}
+});
+
+submenu.addEventListener("click", function(event){
+	if( event.target.classList.contains("by-drug-goto-list") ){
+		action.unselectIyakuhin();
 	}
 });
 
