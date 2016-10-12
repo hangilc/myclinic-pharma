@@ -17615,7 +17615,7 @@
 			}
 			var data = {
 				last_name: patient.last_name,
-				first_naem: patient.first_name,
+				first_name: patient.first_name,
 				last_name_yomi: patient.last_name_yomi,
 				first_name_yomi: patient.first_name_yomi,
 				patient_id: patient.patient_id,

@@ -12,7 +12,6 @@ var common = require("./common");
 // Helpers /////////////////////////////////////////////////////////////////////////////
 
 function getPrescPrinterSetting(){
-	console.log("NULL", null.find());
 	var key = common.prescPrinterSettingKey;
 	return printUtil.getSetting(key);
 }
@@ -41,7 +40,6 @@ function start(visitId, isTechou){
 			alert(err);
 			return;
 		}
-		console.log(result);
 		var drugs = result.drugs.map(function(drug){
 			return util.drugRep(drug);
 		})
