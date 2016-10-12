@@ -498,26 +498,40 @@ function makeDrugBagOps(fullDrug, visit, patient, pharmaDrug, clinicName, clinic
 }
 
 function startBlank(kind){
-	var compiler = new DrugBag({
-	    kind: kind,
-	    patient_name: "　　　　　　",
-	    patient_name_yomi: "　　　　　　　　",
-	    instructions: [],
-	    drug_name: "",
-	    desc: "",
-	    prescribed_at: kanjidate.format(kanjidate.f2, new Date()),
-	    clinic_name: "",
-	    clinic_address: [
-	        "",
-	        "",
-	        "",
-	        ""
-	    ]
+	var clinicName, clinicAddr;
+	task.run([
+		function(done){
+			util.request("config", {}, "GET", 3000, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				clinicName = result.drugbag.clinic_name;
+				clinicAddr = result.drugbag.clinic_address;
+				done();
+			});
+		}
+	], function(err){
+		if( err ){
+			alert(err);
+			return;
+		}
+		var compiler = new DrugBag({
+			kind: kind,
+			patient_name: "　　　　　　",
+			patient_name_yomi: "　　　　　　　　",
+			instructions: [],
+			drug_name: "",
+			desc: "",
+			prescribed_at: kanjidate.format(kanjidate.f2, new Date()),
+			clinic_name: clinicName,
+			clinic_address: clinicAddr
+		});
+		var ops = compiler.getOps();
+		var svg = DrawerSVG.drawerToSvg(ops, {width: "128mm", height: "182mm", viewBox: "0 0 192 273"});
+		var wrapper = document.getElementById("preview-area");
+		wrapper.appendChild(svg);
+		bindPrintButtonSingle(ops);
 	});
-	var ops = compiler.getOps();
-	var svg = DrawerSVG.drawerToSvg(ops, {width: "128mm", height: "182mm", viewBox: "0 0 192 273"});
-	var wrapper = document.getElementById("preview-area");
-	wrapper.appendChild(svg);
-	bindPrintButtonSingle(ops);
 }
 
