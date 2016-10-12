@@ -7,6 +7,22 @@ var DrawerSVG = require("myclinic-drawer-svg");
 var kanjidate = require("kanjidate");
 var util = require("./util");
 var printUtil = require("./print-util");
+var common = require("./common");
+
+// Helpers /////////////////////////////////////////////////////////////////////////////
+
+function getPrescPrinterSetting(){
+	console.log("NULL", null.find());
+	var key = common.prescPrinterSettingKey;
+	return printUtil.getSetting(key);
+}
+
+function getTechouPrinterSetting(){
+	var key = common.techouPrinterSettingKey;
+	return printUtil.getSetting(key);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 (function(){
 	var match = location.search.match(/visit_id=(\d+)/);
@@ -46,7 +62,7 @@ function start(visitId, isTechou){
 		var ops = PrescContent.getOps(data, option);
 	    var svg = DrawerSVG.drawerToSvg(ops, {width: "148mm", height: "210mm", viewBox: "0 0 148 210"});
 	    document.getElementById("preview-area").appendChild(svg);
-	    bindPrintButton(ops);
+	    bindPrintButton(ops, isTechou);
 	})
 }
 
@@ -108,9 +124,15 @@ function fetchData(visitId, cb){
 	})
 }
 
-function bindPrintButton(ops){
+function bindPrintButton(ops, isTechou){
+	var setting;
+	if( isTechou ){
+		setting = getTechouPrinterSetting();
+	} else {
+		setting = getPrescPrinterSetting();
+	}
 	document.getElementById("print-button").addEventListener("click", function(event){
-		printUtil.print([ops], undefined, function(err){
+		printUtil.print([ops], setting, function(err){
 			if( err ){
 				alert(err);
 				return;

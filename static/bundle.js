@@ -488,6 +488,7 @@
 
 	})( true ? exports : (window.conti = {}));
 
+
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
@@ -20259,6 +20260,10 @@
 			}
 		}
 	})
+
+	// if( !NodeList.prototype.forEcah ){
+	//	NodeList.prototype.forEach = Array.prototype.forEach;
+	// }
 
 	wrapper.querySelectorAll("input[name=mode]").forEach(function(e){
 		e.addEventListener("click", function(event){

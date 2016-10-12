@@ -472,6 +472,10 @@ wrapper.addEventListener("click", function(event){
 	}
 })
 
+// if( !NodeList.prototype.forEcah ){
+//	NodeList.prototype.forEach = Array.prototype.forEach;
+// }
+
 wrapper.querySelectorAll("input[name=mode]").forEach(function(e){
 	e.addEventListener("click", function(event){
 		var mode = event.target.value;
