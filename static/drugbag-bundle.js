@@ -87,7 +87,7 @@
 	})();
 
 	function startAllDrugs(visitId){
-		var ctx = {}, drugBagData = null;
+		var ctx = {currentVisitId: visitId}, drugBagData = null, clinicName, clinicAddr;
 		task.run([
 			function(done){
 				service.listDrugs(visitId, function(err, result){
@@ -107,7 +107,6 @@
 				if( ctx.currentPage > 0 ){
 					var drugId = ctx.drugs[ctx.currentPage-1].drug_id;
 					fetchDataForDrugBag(drugId, function(err, result){
-						console.log("fetchDataForDrugBag cb:", err, result);
 						if( err ){
 							done(err);
 							return;
@@ -118,6 +117,17 @@
 				} else {
 					setImmediate(done);
 				}
+			},
+			function(done){
+				util.request("config", {}, "GET", 3000, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					clinicName = result.drugbag.clinic_name;
+					clinicAddr = result.drugbag.clinic_address;
+					done();
+				});
 			}
 		], function(err){
 			if( err ){
@@ -128,7 +138,9 @@
 			navPageUpdate(ctx);
 			document.getElementById("page-nav-wrapper").style.display = "block";
 			if( drugBagData ){
-				var ops = makeDrugBagOps(drugBagData.fullDrug, drugBagData.visit, drugBagData.patient, drugBagData.pharmaDrug);
+				var ops = makeDrugBagOps(drugBagData.fullDrug, drugBagData.visit, 
+						drugBagData.patient, drugBagData.pharmaDrug,
+						clinicName, clinicAddr);
 				renderDrugBag(ops);
 			} else {
 				clearDurgBag();
@@ -302,7 +314,7 @@
 	}
 
 	function composeAllDrugsPages(visitId, drugIds, cb){
-		var visit, patient, drugs = [];
+		var visit, patient, drugs = [], clinicName, clinicAddr;
 		conti.exec([
 			function(done){
 				service.getVisit(visitId, function(err, result){
@@ -347,6 +359,17 @@
 						done();
 					})
 				}, done);
+			},
+			function(done){
+				util.request("config", {}, "GET", 3000, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					clinicName = result.drugbag.clinic_name;
+					clinicAddr = result.drugbag.clinic_address;
+					done();
+				});
 			}
 		], function(err){
 			if( err ){
@@ -354,7 +377,8 @@
 				return;
 			}
 			var pages = drugs.map(function(drug){
-				var data = DrugBagData.createData(drug, visit, patient, drug.pharmaDrug);
+				var data = DrugBagData.createData(drug, visit, patient, drug.pharmaDrug,
+						clinicName, clinicAddr);
 				var compiler = new DrugBag(data);
 				return compiler.getOps();
 			})
@@ -393,7 +417,6 @@
 						return;
 					}
 					fullDrug = result;
-					console.log("fullDrug", fullDrug);
 					done();
 				})
 			},
@@ -513,8 +536,8 @@
 		})	
 	}
 
-	function makeDrugBagOps(fullDrug, visit, patient, pharmaDrug){
-		var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug);
+	function makeDrugBagOps(fullDrug, visit, patient, pharmaDrug, clinicName, clinicAddr){
+		var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug, clinicName, clinicAddr);
 		var compiler = new DrugBag(data);
 		var ops = compiler.getOps();
 		return ops;
