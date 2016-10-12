@@ -16,6 +16,7 @@ var patientListTmpl = hogan.compile(patientListTmplSrc);
 var printUtil = require("./print-util");
 var printerSettingTmplSrc = require("raw!./printer-setting.html");
 var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
+var common = require("./common");
 
 document.getElementById("refresh-button").addEventListener("click", function(event){
 	doRefresh();
@@ -112,9 +113,9 @@ document.body.addEventListener("presc-done", function(event){
 	doRefresh();
 });
 
-var prescPrinterSettingKey = "pharma:presc-printer-setting";
-var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
-var techouPrinterSettingKey = "pharma:techou-printer-setting";
+// var prescPrinterSettingKey = "pharma:presc-printer-setting";
+// var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+// var techouPrinterSettingKey = "pharma:techou-printer-setting";
 
 document.getElementById("printer-setting-link").addEventListener("click", function(event){
 	event.preventDefault();
@@ -135,9 +136,9 @@ document.getElementById("printer-setting-link").addEventListener("click", functi
 				alert(err);
 				return;
 			}
-			var prescKey = prescPrinterSettingKey;
-			var drugbagKey = drugbagPrinterSettingKey;
-			var techouKey = techouPrinterSettingKey;
+			var prescKey = common.prescPrinterSettingKey;
+			var drugbagKey = common.drugbagPrinterSettingKey;
+			var techouKey = common.techouPrinterSettingKey;
 			var prescOptions = makePrintOptions(printUtil.getSetting(prescKey), printSettings);
 			var drugbagOptions = makePrintOptions(printUtil.getSetting(drugbagKey), printSettings);
 			var techouOptions = makePrintOptions(printUtil.getSetting(techouKey), printSettings);
@@ -210,4 +211,5 @@ document.getElementById("printer-setting-workspace").addEventListener("click", f
 // Startup ///////////////////////////////////////////////////////////////////////////
 
 doRefresh();
+
 

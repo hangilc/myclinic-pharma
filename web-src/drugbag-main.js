@@ -9,6 +9,16 @@ var DrawerSVG = require("myclinic-drawer-svg");
 var moment = require("moment");
 var kanjidate = require("kanjidate");
 var printUtil = require("./print-util");
+var common = require("./common");
+
+// Helper ////////////////////////////////////////////////////////////////////////////
+
+function getPrinterSetting(){
+	var key = common.prescPrinterSettingKey;
+   return printUtil.getSetting(key);	
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
 
 (function(){
 	var match;
@@ -174,7 +184,8 @@ function bindPrintButtonAllDrugs(ctx){
 				alert(err);
 				return;
 			}
-			printUtil.print(pages, undefined, function(err){
+			var setting = getPrinterSetting();
+			printUtil.print(pages, setting, function(err){
 				if( err ){
 					alert(err);
 					return;
@@ -187,7 +198,9 @@ function bindPrintButtonAllDrugs(ctx){
 
 function bindPrintButtonSingle(ops){
 	document.getElementById("print-button").addEventListener("click", function(event){
-		printUtil.print([ops], undefined, function(err){
+		var setting = getPrinterSetting();
+		console.log(setting);
+		printUtil.print([ops], setting, function(err){
 			if( err ){
 				alert(err);
 				return;

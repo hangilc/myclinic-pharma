@@ -55,6 +55,16 @@
 	var moment = __webpack_require__(20);
 	var kanjidate = __webpack_require__(18);
 	var printUtil = __webpack_require__(127);
+	var common = __webpack_require__(128);
+
+	// Helper ////////////////////////////////////////////////////////////////////////////
+
+	function getPrinterSetting(){
+		var key = common.prescPrinterSettingKey;
+	   return printUtil.getSetting(key);	
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	(function(){
 		var match;
@@ -220,7 +230,8 @@
 					alert(err);
 					return;
 				}
-				printUtil.print(pages, undefined, function(err){
+				var setting = getPrinterSetting();
+				printUtil.print(pages, setting, function(err){
 					if( err ){
 						alert(err);
 						return;
@@ -233,7 +244,9 @@
 
 	function bindPrintButtonSingle(ops){
 		document.getElementById("print-button").addEventListener("click", function(event){
-			printUtil.print([ops], undefined, function(err){
+			var setting = getPrinterSetting();
+			console.log(setting);
+			printUtil.print([ops], setting, function(err){
 				if( err ){
 					alert(err);
 					return;
@@ -871,7 +884,7 @@
 	};
 
 	exports.listFullVisitsByIyakuhincode = function(patientId, iyakuhincode, offset, count, cb){
-		service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count);
+		service.listFullVisitsByIyakuhincode(patientId, iyakuhincode, offset, count, cb);
 	};
 
 	exports.getFullDrug = function(drugId, at, cb){
@@ -1194,6 +1207,7 @@
 		done();
 	};
 	*/
+
 
 /***/ },
 /* 4 */
@@ -1917,7 +1931,7 @@
 	var DrawerCompiler = __webpack_require__(11).Compiler;
 	var kanjidate = __webpack_require__(18);
 
-	exports.createData = function(drug, visit, patient, pharmaDrug){
+	exports.createData = function(drug, visit, patient, pharmaDrug, clinicName, clinicAddr){
 		return {
 			kind: drugCategoryToSlug(drug.d_category),
 			instructions: composeInstructions(drug.d_category, 
@@ -1926,7 +1940,9 @@
 			patient_name: patient.last_name + " " + patient.first_name,
 			patient_name_yomi: patient.last_name_yomi + " " + patient.first_name_yomi,
 			desc: pharmaDrug ? composeDesc(pharmaDrug.description, pharmaDrug.sideeffect) : "",
-			prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime)
+			prescribed_at: kanjidate.format(kanjidate.f2, visit.v_datetime),
+			clinic_name: clinicName,
+			clinic_address: clinicAddr
 		};
 	}
 
@@ -19146,6 +19162,17 @@
 
 
 
+
+
+/***/ },
+/* 128 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	exports.prescPrinterSettingKey = "pharma:presc-printer-setting";
+	exports.drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+	exports.techouPrinterSettingKey = "pharma:techou-printer-setting";
 
 
 /***/ }

@@ -62,6 +62,7 @@
 	var printUtil = __webpack_require__(132);
 	var printerSettingTmplSrc = __webpack_require__(144);
 	var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
+	var common = __webpack_require__(146);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
 		doRefresh();
@@ -158,9 +159,9 @@
 		doRefresh();
 	});
 
-	var prescPrinterSettingKey = "pharma:presc-printer-setting";
-	var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
-	var techouPrinterSettingKey = "pharma:techou-printer-setting";
+	// var prescPrinterSettingKey = "pharma:presc-printer-setting";
+	// var drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+	// var techouPrinterSettingKey = "pharma:techou-printer-setting";
 
 	document.getElementById("printer-setting-link").addEventListener("click", function(event){
 		event.preventDefault();
@@ -181,9 +182,9 @@
 					alert(err);
 					return;
 				}
-				var prescKey = prescPrinterSettingKey;
-				var drugbagKey = drugbagPrinterSettingKey;
-				var techouKey = techouPrinterSettingKey;
+				var prescKey = common.prescPrinterSettingKey;
+				var drugbagKey = common.drugbagPrinterSettingKey;
+				var techouKey = common.techouPrinterSettingKey;
 				var prescOptions = makePrintOptions(printUtil.getSetting(prescKey), printSettings);
 				var drugbagOptions = makePrintOptions(printUtil.getSetting(drugbagKey), printSettings);
 				var techouOptions = makePrintOptions(printUtil.getSetting(techouKey), printSettings);
@@ -256,6 +257,7 @@
 	// Startup ///////////////////////////////////////////////////////////////////////////
 
 	doRefresh();
+
 
 
 
@@ -21137,6 +21139,18 @@
 /***/ function(module, exports) {
 
 	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
+
+/***/ },
+/* 145 */,
+/* 146 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	exports.prescPrinterSettingKey = "pharma:presc-printer-setting";
+	exports.drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+	exports.techouPrinterSettingKey = "pharma:techou-printer-setting";
+
 
 /***/ }
 /******/ ]);
