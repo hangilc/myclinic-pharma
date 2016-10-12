@@ -19967,7 +19967,11 @@
 			wrapper.style.display = "block";
 		},
 		hide: function(){
-			wrapper.style.display = "hide";
+			wrapper.style.display = "none";
+		},
+		clear: function(){
+			submenu.innerHTML = "";
+			visitsBox.innerHTML = "";
 		},
 		checkByDate: function(){
 			wrapper.querySelector("input[type=radio][name=mode][value=by-date]").checked = true;
@@ -20280,6 +20284,16 @@
 		if( event.target.classList.contains("by-drug-goto-list") ){
 			action.unselectIyakuhin();
 		}
+	});
+
+	document.body.addEventListener("presc-cancel", function(event){
+		view.hide();
+		view.clear();
+	});
+
+	document.body.addEventListener("presc-done", function(event){
+		view.hide();
+		view.clear();
 	});
 
 	// Exports /////////////////////////////////////////////////////////////////////////
