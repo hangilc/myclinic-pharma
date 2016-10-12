@@ -55,12 +55,12 @@
 	var moment = __webpack_require__(10);
 	var PackagingPatient = __webpack_require__(117);
 	var AuxInfo = __webpack_require__(133);
-	__webpack_require__(138);
+	__webpack_require__(140);
 	var util = __webpack_require__(118);
 	var patientListTmplSrc = __webpack_require__(129);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
 	var printUtil = __webpack_require__(132);
-	var printerSettingTmplSrc = __webpack_require__(142);
+	var printerSettingTmplSrc = __webpack_require__(144);
 	var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
@@ -252,6 +252,10 @@
 			this.innerHTML = "";
 		}
 	});
+
+	// Startup ///////////////////////////////////////////////////////////////////////////
+
+	doRefresh();
 
 
 
@@ -19785,15 +19789,15 @@
 	var task = __webpack_require__(1);
 	var service = __webpack_require__(6);
 	var hogan = __webpack_require__(3);
-	var visitsNavTmplSrc = __webpack_require__(134);
+	var visitsNavTmplSrc = __webpack_require__(136);
 	var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
-	var visitsBoxTmplSrc = __webpack_require__(135);
+	var visitsBoxTmplSrc = __webpack_require__(137);
 	var visitsBoxTmpl = hogan.compile(visitsBoxTmplSrc);
 	var kanjidate = __webpack_require__(9);
 	var util = __webpack_require__(118);
-	var submenuByDrugTmplSrc = __webpack_require__(136);
+	var submenuByDrugTmplSrc = __webpack_require__(138);
 	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
-	var submenuByDrugSelectedTmplSrc = __webpack_require__(137);
+	var submenuByDrugSelectedTmplSrc = __webpack_require__(139);
 	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
 	var conti = __webpack_require__(2);
 
@@ -20653,210 +20657,13 @@
 	**/
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(143).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(134).setImmediate))
 
 /***/ },
 /* 134 */
-/***/ function(module, exports) {
-
-	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n\t({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
-
-/***/ },
-/* 135 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<div class=\"visit-date\">{{dateRep}}</div>\r\n\t\t<table width=\"100%\">\r\n\t\t\t<tr style=\"vertical-align: top\">\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#texts}}\r\n\t\t\t\t\t\t<div>{{& .}}</div>\r\n\t\t\t\t\t{{/texts}}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#drugs}}\r\n\t\t\t\t\t\t<div>{{.}}</div>\r\n\t\t\t\t\t{{/drugs}}\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t</div>\r\n{{/list}}"
-
-/***/ },
-/* 136 */
-/***/ function(module, exports) {
-
-	module.exports = "({{patient.last_name}} {{patient.first_name}})\r\n{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}\r\n"
-
-/***/ },
-/* 137 */
-/***/ function(module, exports) {
-
-	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n<div>\r\n{{#requirePaging}}\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n{{/requirePaging}}\r\n({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
-
-/***/ },
-/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-
-	var task = __webpack_require__(1);
-	var service = __webpack_require__(6);
-	var kanjidate = __webpack_require__(9);
-	var hogan = __webpack_require__(3);
-	var util = __webpack_require__(118);
-	var patientInfoTmplSrc = __webpack_require__(139);
-	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
-	var visitsTmplSrc = __webpack_require__(140);
-	var visitsTmpl = hogan.compile(visitsTmplSrc);
-	var drugsTmplSrc = __webpack_require__(141);
-	var drugsTmpl = hogan.compile(drugsTmplSrc);
-
-	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
-		var text = event.target.querySelector("input[type=text]").value;
-		if( !text.match(/^\d+$/) ){
-			alert("患者番号が適切でありません。");
-			return;
-		}
-		var patientId = +text;
-		fetchData(patientId, function(err, data){
-			if( err ){
-				alert(err);
-				return;
-			}
-			renderPatient(data.patient);
-			renderVisits(data.visits);
-		})
-	});
-
-	function renderPatient(patient){
-		var html = patientInfoTmpl.render(patient);
-		document.getElementById("previous-techou-patient").innerHTML = html;
-	}
-
-	function renderVisits(visits){
-		var list = visits.map(function(visit){
-			return {
-				visit_id: visit.visit_id,
-				label: kanjidate.format(kanjidate.f1, visit.v_datetime)
-			};
-		});
-		var html = visitsTmpl.render({list: list});
-		document.getElementById("previous-techou-visits").innerHTML = html;
-	}
-
-	function fetchData(patientId, cb){
-		var patient, visits;
-		task.run([
-			function(done){
-				service.getPatient(patientId, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					patient = result;
-					done();
-				})
-			},
-			function(done){
-				service.listVisits(patientId, 0, 10, function(err, result){
-					if( err ){
-						done(err);
-						return;
-					}
-					visits = result;
-					done();
-				})
-			}
-		], function(err){
-			if( err ){
-				cb(err);
-				return;
-			}
-			cb(undefined, {
-				patient: patient,
-				visits: visits
-			});
-		});
-	}
-
-	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "A" && target.hasAttribute("data-visit-id") ){
-			var nextElement = util.nextElementSibling(target);
-			if( nextElement !== null && nextElement.getAttribute("data-kind") === "prev-techou-drugs" ){
-				nextElement.parentNode.removeChild(nextElement);
-				return;
-			}
-			var visitId = target.getAttribute("data-visit-id");
-			var drugs;
-			task.run([
-				function(done){
-					service.listFullDrugs(visitId, function(err, result){
-						if( err ){
-							done(err);
-							return;
-						}
-						drugs = result;
-						done();
-					})
-				}
-			], function(err){
-				if( err ){
-					alert(err);
-					return;
-				}
-				var index = 1;
-				var list = drugs.map(function(drug){
-					return {
-						label: util.drugRep(drug),
-					}
-				});
-				var html = drugsTmpl.render({list: list, visit_id: visitId});
-				var dom = document.createElement("div");
-				dom.setAttribute("data-kind", "prev-techou-drugs");
-				dom.innerHTML = html;
-				util.insertAfter(event.target, dom);
-			})
-		}
-	});
-
-	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "BUTTON" && target.classList.contains("print-prev-techou-button") ){
-			var visitId = target.getAttribute("data-visit-id");
-			window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
-		}
-	});
-
-	function doClear(){
-		var wrapper = document.getElementById("previous-techou-wrapper");
-		wrapper.querySelector("form.search-form input[type=text]").value = "";
-		document.getElementById("previous-techou-patient").innerHTML = "";
-		document.getElementById("previous-techou-visits").innerHTML = "";
-	}
-
-	document.getElementById("previous-techou-patient").addEventListener("click", function(event){
-		var target = event.target;
-		if( target.tagName === "BUTTON" && target.classList.contains("end-button") ){
-			doClear();
-		}
-	});
-
-/***/ },
-/* 139 */
-/***/ function(module, exports) {
-
-	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
-
-/***/ },
-/* 140 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
-
-/***/ },
-/* 141 */
-/***/ function(module, exports) {
-
-	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
-
-/***/ },
-/* 142 */
-/***/ function(module, exports) {
-
-	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
-
-/***/ },
-/* 143 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(144).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(135).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -20932,10 +20739,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(143).setImmediate, __webpack_require__(143).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(134).setImmediate, __webpack_require__(134).clearImmediate))
 
 /***/ },
-/* 144 */
+/* 135 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -21119,6 +20926,203 @@
 	};
 	process.umask = function() { return 0; };
 
+
+/***/ },
+/* 136 */
+/***/ function(module, exports) {
+
+	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n\t({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
+
+/***/ },
+/* 137 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<div class=\"visit-date\">{{dateRep}}</div>\r\n\t\t<table width=\"100%\">\r\n\t\t\t<tr style=\"vertical-align: top\">\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#texts}}\r\n\t\t\t\t\t\t<div>{{& .}}</div>\r\n\t\t\t\t\t{{/texts}}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#drugs}}\r\n\t\t\t\t\t\t<div>{{.}}</div>\r\n\t\t\t\t\t{{/drugs}}\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t</div>\r\n{{/list}}"
+
+/***/ },
+/* 138 */
+/***/ function(module, exports) {
+
+	module.exports = "({{patient.last_name}} {{patient.first_name}})\r\n{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}\r\n"
+
+/***/ },
+/* 139 */
+/***/ function(module, exports) {
+
+	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n<div>\r\n{{#requirePaging}}\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n{{/requirePaging}}\r\n({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
+
+/***/ },
+/* 140 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var task = __webpack_require__(1);
+	var service = __webpack_require__(6);
+	var kanjidate = __webpack_require__(9);
+	var hogan = __webpack_require__(3);
+	var util = __webpack_require__(118);
+	var patientInfoTmplSrc = __webpack_require__(141);
+	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
+	var visitsTmplSrc = __webpack_require__(142);
+	var visitsTmpl = hogan.compile(visitsTmplSrc);
+	var drugsTmplSrc = __webpack_require__(143);
+	var drugsTmpl = hogan.compile(drugsTmplSrc);
+
+	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
+		var text = event.target.querySelector("input[type=text]").value;
+		if( !text.match(/^\d+$/) ){
+			alert("患者番号が適切でありません。");
+			return;
+		}
+		var patientId = +text;
+		fetchData(patientId, function(err, data){
+			if( err ){
+				alert(err);
+				return;
+			}
+			renderPatient(data.patient);
+			renderVisits(data.visits);
+		})
+	});
+
+	function renderPatient(patient){
+		var html = patientInfoTmpl.render(patient);
+		document.getElementById("previous-techou-patient").innerHTML = html;
+	}
+
+	function renderVisits(visits){
+		var list = visits.map(function(visit){
+			return {
+				visit_id: visit.visit_id,
+				label: kanjidate.format(kanjidate.f1, visit.v_datetime)
+			};
+		});
+		var html = visitsTmpl.render({list: list});
+		document.getElementById("previous-techou-visits").innerHTML = html;
+	}
+
+	function fetchData(patientId, cb){
+		var patient, visits;
+		task.run([
+			function(done){
+				service.getPatient(patientId, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					patient = result;
+					done();
+				})
+			},
+			function(done){
+				service.listVisits(patientId, 0, 10, function(err, result){
+					if( err ){
+						done(err);
+						return;
+					}
+					visits = result;
+					done();
+				})
+			}
+		], function(err){
+			if( err ){
+				cb(err);
+				return;
+			}
+			cb(undefined, {
+				patient: patient,
+				visits: visits
+			});
+		});
+	}
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "A" && target.hasAttribute("data-visit-id") ){
+			var nextElement = util.nextElementSibling(target);
+			if( nextElement !== null && nextElement.getAttribute("data-kind") === "prev-techou-drugs" ){
+				nextElement.parentNode.removeChild(nextElement);
+				return;
+			}
+			var visitId = target.getAttribute("data-visit-id");
+			var drugs;
+			task.run([
+				function(done){
+					service.listFullDrugs(visitId, function(err, result){
+						if( err ){
+							done(err);
+							return;
+						}
+						drugs = result;
+						done();
+					})
+				}
+			], function(err){
+				if( err ){
+					alert(err);
+					return;
+				}
+				var index = 1;
+				var list = drugs.map(function(drug){
+					return {
+						label: util.drugRep(drug),
+					}
+				});
+				var html = drugsTmpl.render({list: list, visit_id: visitId});
+				var dom = document.createElement("div");
+				dom.setAttribute("data-kind", "prev-techou-drugs");
+				dom.innerHTML = html;
+				util.insertAfter(event.target, dom);
+			})
+		}
+	});
+
+	document.getElementById("previous-techou-visits").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("print-prev-techou-button") ){
+			var visitId = target.getAttribute("data-visit-id");
+			window.open("presc-preview.html?mode=techou&visit_id=" + visitId, "_blank", "width=400,height=544");
+		}
+	});
+
+	function doClear(){
+		var wrapper = document.getElementById("previous-techou-wrapper");
+		wrapper.querySelector("form.search-form input[type=text]").value = "";
+		document.getElementById("previous-techou-patient").innerHTML = "";
+		document.getElementById("previous-techou-visits").innerHTML = "";
+	}
+
+	document.getElementById("previous-techou-patient").addEventListener("click", function(event){
+		var target = event.target;
+		if( target.tagName === "BUTTON" && target.classList.contains("end-button") ){
+			doClear();
+		}
+	});
+
+/***/ },
+/* 141 */
+/***/ function(module, exports) {
+
+	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
+
+/***/ },
+/* 142 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
+
+/***/ },
+/* 143 */
+/***/ function(module, exports) {
+
+	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
+
+/***/ },
+/* 144 */
+/***/ function(module, exports) {
+
+	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
 
 /***/ }
 /******/ ]);
