@@ -211,5 +211,3 @@ document.getElementById("printer-setting-workspace").addEventListener("click", f
 // Startup ///////////////////////////////////////////////////////////////////////////
 
 doRefresh();
-
-
