@@ -15,8 +15,8 @@ var util = require("./util");
 // Helper ////////////////////////////////////////////////////////////////////////////
 
 function getPrinterSetting(){
-	var key = common.prescPrinterSettingKey;
-   return printUtil.getSetting(key);	
+	var key = common.drugbagPrinterSettingKey;
+	return printUtil.getSetting(key);	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -199,9 +199,8 @@ function bindPrintButtonAllDrugs(ctx){
 			}
 			var setting = getPrinterSetting();
 			printUtil.print(pages, setting, function(err){
-				if( err ){
+				if( err && err !== "canceled" ){
 					alert(err);
-					return;
 				}
 				window.close();
 			})
@@ -214,9 +213,8 @@ function bindPrintButtonSingle(ops){
 		var setting = getPrinterSetting();
 		console.log(setting);
 		printUtil.print([ops], setting, function(err){
-			if( err ){
+			if( err && err !== "canceled" ){
 				alert(err);
-				return;
 			}
 			window.close();
 		});

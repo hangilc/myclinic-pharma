@@ -24,7 +24,17 @@ exports.print = function(pages, setting, done){
 		}),
 		mode: "cors",
 		cache: "no-cache"
-	}, done);
+	}, function(err, ret){
+		if( err ){
+			done(err);
+			return;
+		}
+		if( ret === "ok" ){
+			done();
+		} else {
+			done(ret);
+		}
+	});
 };
 
 exports.listSettings = function(cb){

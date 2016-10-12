@@ -61,8 +61,8 @@
 	// Helper ////////////////////////////////////////////////////////////////////////////
 
 	function getPrinterSetting(){
-		var key = common.prescPrinterSettingKey;
-	   return printUtil.getSetting(key);	
+		var key = common.drugbagPrinterSettingKey;
+		return printUtil.getSetting(key);	
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -245,9 +245,8 @@
 				}
 				var setting = getPrinterSetting();
 				printUtil.print(pages, setting, function(err){
-					if( err ){
+					if( err && err !== "canceled" ){
 						alert(err);
-						return;
 					}
 					window.close();
 				})
@@ -260,9 +259,8 @@
 			var setting = getPrinterSetting();
 			console.log(setting);
 			printUtil.print([ops], setting, function(err){
-				if( err ){
+				if( err && err !== "canceled" ){
 					alert(err);
-					return;
 				}
 				window.close();
 			});
@@ -19383,7 +19381,17 @@
 			}),
 			mode: "cors",
 			cache: "no-cache"
-		}, done);
+		}, function(err, ret){
+			if( err ){
+				done(err);
+				return;
+			}
+			if( ret === "ok" ){
+				done();
+			} else {
+				done(ret);
+			}
+		});
 	};
 
 	exports.listSettings = function(cb){

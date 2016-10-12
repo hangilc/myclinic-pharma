@@ -54,15 +54,15 @@
 	var kanjidate = __webpack_require__(12);
 	var moment = __webpack_require__(13);
 	var PackagingPatient = __webpack_require__(120);
-	var AuxInfo = __webpack_require__(136);
-	__webpack_require__(141);
+	var AuxInfo = __webpack_require__(137);
+	__webpack_require__(142);
 	var util = __webpack_require__(121);
 	var patientListTmplSrc = __webpack_require__(132);
 	var patientListTmpl = hogan.compile(patientListTmplSrc);
 	var printUtil = __webpack_require__(135);
-	var printerSettingTmplSrc = __webpack_require__(145);
+	var printerSettingTmplSrc = __webpack_require__(146);
 	var printerSettingTmpl = hogan.compile(printerSettingTmplSrc);
-	var common = __webpack_require__(146);
+	var common = __webpack_require__(136);
 
 	document.getElementById("refresh-button").addEventListener("click", function(event){
 		doRefresh();
@@ -17549,6 +17549,26 @@
 	var drugListTmplSrc = __webpack_require__(134);
 	var drugListTmpl = hogan.compile(drugListTmplSrc);
 	var printUtil = __webpack_require__(135);
+	var common = __webpack_require__(136);
+
+	// Helpers //////////////////////////////////////////////////////////////////////////////
+
+	function getPrescPrinterSetting(){
+		var key = common.prescPrinterSettingKey;
+		return printUtil.getSetting(key);	
+	}
+
+	function getDrugbagPrinterSetting(){
+		var key = common.drugbagPrinterSettingKey;
+		return printUtil.getSetting(key);	
+	}
+
+	function getTechouPrinterSetting(){
+		var key = common.techouPrinterSettingKey;
+		return printUtil.getSetting(key);	
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////
 
 	var ctx = {
 		currentVisitId: 0
@@ -17722,17 +17742,35 @@
 			},
 			function(done){
 				var prescOps = util.composePrescOps(prescData);
-				printUtil.print([prescOps], undefined, done);
+				var setting = getPrescPrinterSetting();
+				printUtil.print([prescOps], setting, function(err){
+					if( err && err !== "canceled" ){
+						alert(err);
+					}
+					done();
+				});
 			},
 			function(done){
 				var pages = drugsData.map(function(data){
 					return util.composeDrugBagOps(data);
 				});
-				printUtil.print(pages, undefined, done);
+				var setting = getDrugbagPrinterSetting();
+				printUtil.print(pages, setting, function(err){
+					if( err && err !== "canceled" ){
+						alert(err);
+					}
+					done();
+				});
 			},
 			function(done){
 				var prescOps = util.composeTechouOps(prescData);
-				printUtil.print([prescOps], undefined, done);
+				var setting = getTechouPrinterSetting();
+				printUtil.print([prescOps], setting, function(err){
+					if( err && err !== "canceled" ){
+						alert(err);
+					}
+					done();
+				});
 			}
 		], function(err){
 			if( err ){
@@ -17768,13 +17806,25 @@
 			},
 			function(done){
 				var prescOps = util.composePrescOps(prescData);
-				printUtil.print([prescOps], undefined, done);
+				var setting = getPrescPrinterSetting();
+				printUtil.print([prescOps], setting, function(err){
+					if( err && err !== "canceled" ){
+						alert(err);
+					}
+					done();
+				});
 			},
 			function(done){
 				var pages = drugsData.map(function(data){
 					return util.composeDrugBagOps(data);
 				});
-				printUtil.print(pages, undefined, done);
+				var setting = getDrugbagPrinterSetting();
+				printUtil.print(pages, setting, function(err){
+					if( err && err !== "canceled" ){
+						alert(err);
+					}
+					done();
+				});
 			},
 		], function(err){
 			if( err ){
@@ -20217,7 +20267,17 @@
 			}),
 			mode: "cors",
 			cache: "no-cache"
-		}, done);
+		}, function(err, ret){
+			if( err ){
+				done(err);
+				return;
+			}
+			if( ret === "ok" ){
+				done();
+			} else {
+				done(ret);
+			}
+		});
 	};
 
 	exports.listSettings = function(cb){
@@ -20254,6 +20314,17 @@
 
 /***/ },
 /* 136 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	exports.prescPrinterSettingKey = "pharma:presc-printer-setting";
+	exports.drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
+	exports.techouPrinterSettingKey = "pharma:techou-printer-setting";
+
+
+/***/ },
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate) {"use strict";
@@ -20261,15 +20332,15 @@
 	var task = __webpack_require__(1);
 	var service = __webpack_require__(8);
 	var hogan = __webpack_require__(5);
-	var visitsNavTmplSrc = __webpack_require__(137);
+	var visitsNavTmplSrc = __webpack_require__(138);
 	var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
-	var visitsBoxTmplSrc = __webpack_require__(138);
+	var visitsBoxTmplSrc = __webpack_require__(139);
 	var visitsBoxTmpl = hogan.compile(visitsBoxTmplSrc);
 	var kanjidate = __webpack_require__(12);
 	var util = __webpack_require__(121);
-	var submenuByDrugTmplSrc = __webpack_require__(139);
+	var submenuByDrugTmplSrc = __webpack_require__(140);
 	var submenuByDrugTmpl = hogan.compile(submenuByDrugTmplSrc);
-	var submenuByDrugSelectedTmplSrc = __webpack_require__(140);
+	var submenuByDrugSelectedTmplSrc = __webpack_require__(141);
 	var submenuByDrugSelectedTmpl = hogan.compile(submenuByDrugSelectedTmplSrc);
 	var conti = __webpack_require__(2);
 
@@ -21150,31 +21221,31 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).setImmediate))
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports) {
 
 	module.exports = "<div>\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n\t({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
 
 /***/ },
-/* 138 */
+/* 139 */
 /***/ function(module, exports) {
 
 	module.exports = "{{#list}}\r\n\t<div>\r\n\t\t<div class=\"visit-date\">{{dateRep}}</div>\r\n\t\t<table width=\"100%\">\r\n\t\t\t<tr style=\"vertical-align: top\">\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#texts}}\r\n\t\t\t\t\t\t<div>{{& .}}</div>\r\n\t\t\t\t\t{{/texts}}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td width=\"50%\">\r\n\t\t\t\t\t{{#drugs}}\r\n\t\t\t\t\t\t<div>{{.}}</div>\r\n\t\t\t\t\t{{/drugs}}\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t</div>\r\n{{/list}}"
 
 /***/ },
-/* 139 */
+/* 140 */
 /***/ function(module, exports) {
 
 	module.exports = "({{patient.last_name}} {{patient.first_name}})\r\n{{#list}}\r\n\t<div>\r\n\t\t<a href=\"javascript:void(0)\" data-iyakuhincode=\"{{iyakuhincode}}\" class=\"by-drug-item\">{{name}}</a>\r\n\t</div>\r\n{{/list}}\r\n"
 
 /***/ },
-/* 140 */
+/* 141 */
 /***/ function(module, exports) {
 
 	module.exports = "<div>{{name}} <button class=\"by-drug-goto-list\">薬剤一覧へ</button></div>\r\n<div>\r\n{{#requirePaging}}\r\n\t<span class=\"visits-nav-current\">{{current}}</span> / {{total}} \r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-first\">&laquo;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-prev\">&lt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-next\">&gt;</a>\r\n\t<a href=\"javascript:void(0)\" class=\"visits-nav-last\">&raquo;</a>\r\n{{/requirePaging}}\r\n({{patient.last_name}} {{patient.first_name}})\r\n</div>\r\n"
 
 /***/ },
-/* 141 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -21184,11 +21255,11 @@
 	var kanjidate = __webpack_require__(12);
 	var hogan = __webpack_require__(5);
 	var util = __webpack_require__(121);
-	var patientInfoTmplSrc = __webpack_require__(142);
+	var patientInfoTmplSrc = __webpack_require__(143);
 	var patientInfoTmpl = hogan.compile(patientInfoTmplSrc);
-	var visitsTmplSrc = __webpack_require__(143);
+	var visitsTmplSrc = __webpack_require__(144);
 	var visitsTmpl = hogan.compile(visitsTmplSrc);
-	var drugsTmplSrc = __webpack_require__(144);
+	var drugsTmplSrc = __webpack_require__(145);
 	var drugsTmpl = hogan.compile(drugsTmplSrc);
 
 	document.querySelector("#previous-techou-wrapper form.search-form").addEventListener("submit", function(event){
@@ -21323,39 +21394,28 @@
 	});
 
 /***/ },
-/* 142 */
+/* 143 */
 /***/ function(module, exports) {
 
 	module.exports = "{{last_name}} {{first_name}} \r\n<button class=\"end-button\">終了</button>"
 
 /***/ },
-/* 143 */
+/* 144 */
 /***/ function(module, exports) {
 
 	module.exports = "{{#list}}\r\n<div>\r\n\t<a href=\"javascript:void(0)\" data-visit-id=\"{{visit_id}}\">{{label}}</a>\r\n</div>\r\n{{/list}}"
 
 /***/ },
-/* 144 */
+/* 145 */
 /***/ function(module, exports) {
 
 	module.exports = "{{#list}}\r\n\t<div>{{label}}</div>\r\n{{/list}}\r\n<button class=\"print-prev-techou-button\" data-visit-id=\"{{visit_id}}\">印刷</button>"
 
 /***/ },
-/* 145 */
-/***/ function(module, exports) {
-
-	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
-
-/***/ },
 /* 146 */
 /***/ function(module, exports) {
 
-	"use strict";
-
-	exports.prescPrinterSettingKey = "pharma:presc-printer-setting";
-	exports.drugbagPrinterSettingKey = "pharma:drugbag-printer-setting";
-	exports.techouPrinterSettingKey = "pharma:techou-printer-setting";
-
+	module.exports = "<div style=\"margin: 6px\">\r\n\t<form onsubmit=\"return false\">\r\n    処方内容 {{prescKey}}\r\n    <select name=\"{{presc-key}}\" class=\"printer-setting-option\">\r\n    \t{{#prescOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n\t\t{{/prescOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    薬袋 \r\n    <select name=\"{{drugbag-key}}\" class=\"printer-setting-option\">\r\n    \t{{#drugbagOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/drugbagOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    お薬手帳 \r\n    <select name=\"{{techou-key}}\" class=\"printer-setting-option\">\r\n    \t{{#techouOptions}}\r\n    \t\t<option value=\"{{value}}\" {{#selected}}selected{{/selected}}>\r\n    \t\t\t{{label}}\r\n    \t\t</option>\r\n    \t{{/techouOptions}}\r\n    </select>\r\n    <hr style=\"border: 1px solid #ccc; margin: 4px 0\"/>\r\n    <button class=\"manage-printer-button\">プリンター管理</button>\r\n    <button class=\"close-button\">閉じる</button>   \r\n    </form>  \r\n</div>\r\n"
 
 /***/ }
 /******/ ]);

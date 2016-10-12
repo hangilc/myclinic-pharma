@@ -13,6 +13,26 @@ var packagingPatientTmpl = hogan.compile(packagingPatientTmplSrc);
 var drugListTmplSrc = require("raw!./drug-list.html");
 var drugListTmpl = hogan.compile(drugListTmplSrc);
 var printUtil = require("./print-util");
+var common = require("./common");
+
+// Helpers //////////////////////////////////////////////////////////////////////////////
+
+function getPrescPrinterSetting(){
+	var key = common.prescPrinterSettingKey;
+	return printUtil.getSetting(key);	
+}
+
+function getDrugbagPrinterSetting(){
+	var key = common.drugbagPrinterSettingKey;
+	return printUtil.getSetting(key);	
+}
+
+function getTechouPrinterSetting(){
+	var key = common.techouPrinterSettingKey;
+	return printUtil.getSetting(key);	
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 var ctx = {
 	currentVisitId: 0
@@ -186,17 +206,35 @@ document.getElementById("print-all-button").addEventListener("click", function(e
 		},
 		function(done){
 			var prescOps = util.composePrescOps(prescData);
-			printUtil.print([prescOps], undefined, done);
+			var setting = getPrescPrinterSetting();
+			printUtil.print([prescOps], setting, function(err){
+				if( err && err !== "canceled" ){
+					alert(err);
+				}
+				done();
+			});
 		},
 		function(done){
 			var pages = drugsData.map(function(data){
 				return util.composeDrugBagOps(data);
 			});
-			printUtil.print(pages, undefined, done);
+			var setting = getDrugbagPrinterSetting();
+			printUtil.print(pages, setting, function(err){
+				if( err && err !== "canceled" ){
+					alert(err);
+				}
+				done();
+			});
 		},
 		function(done){
 			var prescOps = util.composeTechouOps(prescData);
-			printUtil.print([prescOps], undefined, done);
+			var setting = getTechouPrinterSetting();
+			printUtil.print([prescOps], setting, function(err){
+				if( err && err !== "canceled" ){
+					alert(err);
+				}
+				done();
+			});
 		}
 	], function(err){
 		if( err ){
@@ -232,13 +270,25 @@ document.getElementById("print-all-except-techou-button").addEventListener("clic
 		},
 		function(done){
 			var prescOps = util.composePrescOps(prescData);
-			printUtil.print([prescOps], undefined, done);
+			var setting = getPrescPrinterSetting();
+			printUtil.print([prescOps], setting, function(err){
+				if( err && err !== "canceled" ){
+					alert(err);
+				}
+				done();
+			});
 		},
 		function(done){
 			var pages = drugsData.map(function(data){
 				return util.composeDrugBagOps(data);
 			});
-			printUtil.print(pages, undefined, done);
+			var setting = getDrugbagPrinterSetting();
+			printUtil.print(pages, setting, function(err){
+				if( err && err !== "canceled" ){
+					alert(err);
+				}
+				done();
+			});
 		},
 	], function(err){
 		if( err ){

@@ -131,9 +131,8 @@ function bindPrintButton(ops, isTechou){
 	}
 	document.getElementById("print-button").addEventListener("click", function(event){
 		printUtil.print([ops], setting, function(err){
-			if( err ){
+			if( err && err !== "canceled" ){
 				alert(err);
-				return;
 			}
 			window.close();
 		})
