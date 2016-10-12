@@ -10,6 +10,7 @@ var moment = require("moment");
 var kanjidate = require("kanjidate");
 var printUtil = require("./print-util");
 var common = require("./common");
+var util = require("./util");
 
 // Helper ////////////////////////////////////////////////////////////////////////////
 
@@ -316,7 +317,7 @@ function composeAllDrugsPages(visitId, drugIds, cb){
 }
 
 function composeSingleDrugOps(drugId, cb){
-	var drug, visit, fullDrug, patient, pharmaDrug;
+	var drug, visit, fullDrug, patient, pharmaDrug, clinicName, clinicAddr;
 	conti.exec([
 		function(done){
 			service.getDrug(drugId, function(err, result){
@@ -369,13 +370,25 @@ function composeSingleDrugOps(drugId, cb){
 				pharmaDrug = result;
 				done();
 			})
+		},
+		function(done){
+			util.request("config", {}, "GET", 3000, function(err, result){
+				if( err ){
+					done(err);
+					return;
+				}
+				clinicName = result.drugbag.clinic_name;
+				clinicAddr = result.drugbag.clinic_address;
+				console.log("config", result);
+				done();
+			});
 		}
 	], function(err){
 		if( err ){
 			cb(err);
 			return;
 		}
-		var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug);
+		var data = DrugBagData.createData(fullDrug, visit, patient, pharmaDrug, clinicName, clinicAddr);
 		var compiler = new DrugBag(data);
 		var ops = compiler.getOps();
 		cb(undefined, ops);
