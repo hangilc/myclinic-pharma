@@ -1,7 +1,7 @@
 "use strict";
 
 var task = require("./task");
-var hogan = require("hogan");
+var hogan = require("hogan.js");
 var service = require("./pharma-service");
 var mConsts = require("myclinic-consts");
 var conti = require("conti");

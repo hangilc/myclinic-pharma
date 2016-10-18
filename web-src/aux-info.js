@@ -2,7 +2,7 @@
 
 var task = require("./task");
 var service = require("./pharma-service");
-var hogan = require("hogan");
+var hogan = require("hogan.js");
 var visitsNavTmplSrc = require("raw!./visits-nav.html");
 var visitsNavTmpl = hogan.compile(visitsNavTmplSrc);
 var visitsBoxTmplSrc = require("raw!./visits-box.html");

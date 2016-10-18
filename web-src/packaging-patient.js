@@ -1,6 +1,6 @@
 "use strict";
 
-var hogan = require("hogan");
+var hogan = require("hogan.js");
 var task = require("./task");
 var service = require("./pharma-service");
 var kanjidate = require("kanjidate");
