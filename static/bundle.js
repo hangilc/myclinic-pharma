@@ -46,6 +46,11 @@
 
 	"use strict";
 
+	if( !NodeList.prototype.forEach ){
+		NodeList.prototype.forEach = Array.prototype.forEach;
+	}
+
+
 	var task = __webpack_require__(1);
 	var hogan = __webpack_require__(5);
 	var service = __webpack_require__(8);

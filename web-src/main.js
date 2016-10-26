@@ -1,5 +1,10 @@
 "use strict";
 
+if( !NodeList.prototype.forEach ){
+	NodeList.prototype.forEach = Array.prototype.forEach;
+}
+
+
 var task = require("./task");
 var hogan = require("hogan.js");
 var service = require("./pharma-service");
