@@ -1,6 +1,6 @@
 {
   "name": "myclinic-pharma",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Pharmacy service for myclinic",
   "main": "index.js",
   "scripts": {
@@ -36,6 +36,5 @@
     "myclinic-drawer-print-server": "^2.0.0",
     "webpack": "^1.13.2"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
