@@ -1,4 +1,4 @@
-# myclinic-shohousen
+# myclinic-pharma
 
 Pharma service for myclinic.
 
