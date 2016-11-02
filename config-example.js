@@ -4,7 +4,7 @@ module.exports = {
 	drugbag: {
 		clinic_name: "{CLINIC_NAME}",
 		clinic_address: [
-			"„Äí123-4567",
+			"Åß123-4567",
 			"CLINIC_ADDR",
 			"CLINIC_PHONE",
 			"CLINIC_HOMEPAGE"
@@ -18,5 +18,6 @@ module.exports = {
 	        "{CLINIC DOCTOR}"
 		]
 	},
-    "print-server-port": 8082
+	"service-url": process.env.MYCLINIC_SERVER,
+	port: 9002
 };

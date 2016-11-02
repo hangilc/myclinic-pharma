@@ -5,7 +5,8 @@ var conti = require("conti");
 var printServerPort = 8082;
 
 function printServerUrl(){
-	return location.protocol + "//" + "localhost" + ":" + printServerPort;
+	return "/printer";
+	// return location.protocol + "//" + "localhost" + ":" + printServerPort;
 }
 
 exports.setPrintServerPort = function(port){

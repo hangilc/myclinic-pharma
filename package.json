@@ -30,10 +30,12 @@
     "myclinic-drawer": "^1.0.4",
     "myclinic-drawer-forms": "^1.0.4",
     "myclinic-drawer-svg": "^1.0.1",
-    "myclinic-service": "^1.0.0",
     "myclinic-service-api": "^1.0.1",
     "raw-loader": "^0.5.1",
+    "http-proxy": "^1.15.2",
+    "myclinic-drawer-print-server": "^2.0.0",
     "webpack": "^1.13.2"
   },
-  "dependencies": {}
+  "dependencies": {
+  }
 }
